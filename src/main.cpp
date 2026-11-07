@@ -22,7 +22,7 @@ enum class Tile{
     SPIKE_RIGHT = 4,
     PLATFORM = 5,
     SPIKE_DOWN = 8,
-    GRASS = 6,
+    GRASS = 9,
     SPIKE_LEFT = 12,
     DIRT = 13,
 };
@@ -48,21 +48,21 @@ Level load_level(const char* path){
     std::string buffer;
     bool first_row = true;
     while(file >> buffer){
-        size_t last_comma{};
+        size_t last_comma = -1;
         int32_t id{};
         for(size_t i{}; i < buffer.size(); i++){
             if (buffer[i] == ','){
-                id = atoi(buffer.substr(last_comma, i - 1).c_str());
+                id = atoi(buffer.substr(last_comma + 1, i - last_comma).c_str());
                 last_comma = i;
+                out.flat.push_back(static_cast<Tile>(id));
+                std::cout << id << ',';
             }
         }
-        
+        std::cout << '\n';
         if(first_row){
             first_row = false;
             out.width = out.flat.size();
         }
-
-        out.flat.push_back(static_cast<Tile>(id));
     }
     
     out.height = out.flat.size() / out.width;
@@ -112,6 +112,7 @@ struct Global{
 
     Player player;
     Level level;
+    Camera2D cam{.offset{static_cast<float>(WIDTH) / 2, static_cast<float>(HEIGHT) / 2}, .zoom = 1};
 }g;
 
 float get_direction(float value){
@@ -124,12 +125,12 @@ void load_assets(){
     g.sprites.player = Sprite{g.spritesheet, {48, 48, 16, 16}};
     g.sprites.grass = Sprite{g.spritesheet, {16, 32, 16, 16}};
     g.sprites.dirt = Sprite{g.spritesheet, {16, 48, 16, 16}};
-    g.sprites.platform = Sprite{g.spritesheet, {16, 0, 16, 16}};
-    g.sprites.spike = Sprite{g.spritesheet, {16, 16, 16, 16}};
+    g.sprites.platform = Sprite{g.spritesheet, {16, 16, 16, 16}};
+    g.sprites.spike = Sprite{g.spritesheet, {16, 0, 16, 16}};
     g.sprites.spike_up = Sprite{g.spritesheet, {0, 0, 16, 16}};
     g.sprites.spike_down = Sprite{g.spritesheet, {0, 32, 16, 16}};
-    g.sprites.spike_left = Sprite{g.spritesheet, {0, 16, 16, 16}};
-    g.sprites.spike_right = Sprite{g.spritesheet, {0, 48, 16, 16}};
+    g.sprites.spike_left = Sprite{g.spritesheet, {0, 48, 16, 16}};
+    g.sprites.spike_right = Sprite{g.spritesheet, {0, 16, 16, 16}};
 }
 
 int find_pad() {
@@ -289,6 +290,9 @@ void tick(){
 }
 
 void draw(){
+    g.cam.target = g.player.pos * g.TILE_PIXELS;
+    BeginMode2D(g.cam);
+
     for(int32_t y{}; y < g.level.height; y++){
         for(int32_t x{}; x < g.level.width; x++){
             Tile tile = get_tile(g.level, x, y);
@@ -330,6 +334,8 @@ void draw(){
         {},
         WHITE
     );
+
+    EndMode2D();
 }
 
 void flip_and_draw_target(RenderTexture2D target){
