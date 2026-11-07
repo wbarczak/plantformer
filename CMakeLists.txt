@@ -18,5 +18,7 @@ PRIVATE
 
 target_compile_features(game PRIVATE cxx_std_20)
 
-add_compile_definitions(game PRIVATE ASSETS="${PROJECT_SOURCE_DIR}/assets")
-#add_compile_definitions(game PRIVATE ASSETS="/assets")
+add_compile_definitions(game PRIVATE ASSETS="${PROJECT_SOURCE_DIR}/assets/")
+#add_compile_definitions(game PRIVATE ASSETS="/assets/")
+add_compile_definitions(game PRIVATE LEVELS="${PROJECT_SOURCE_DIR}/levels/")
+#add_compile_definitions(game PRIVATE LEVELS="/levels/")

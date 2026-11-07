@@ -1,7 +1,11 @@
 #include <cstdint>
 #include <algorithm>
+#include <cstdlib>
 #include <iostream>
 #include <cmath>
+#include <vector>
+#include <fstream>
+#include <string>
 
 #include <raylib.h>
 #include <raymath.h>
@@ -11,9 +15,16 @@ struct Sprite{
     Rectangle rect{};
 };
 
-enum BlockType{
-    A,
-    S
+enum class Tile{
+    AIR = -1,
+    SPIKE_UP = 0,
+    SPIKE = 1,
+    SPIKE_RIGHT = 4,
+    PLATFORM = 5,
+    SPIKE_DOWN = 8,
+    GRASS = 6,
+    SPIKE_LEFT = 12,
+    DIRT = 13,
 };
 
 struct Player{
@@ -21,7 +32,46 @@ struct Player{
     Vector2 vel{};
     Rectangle hurtbox{-.25, -.75, .5, .75};
     bool grounded = false;
+    bool facing_left = false;
 };
+
+struct Level{
+    std::vector<Tile> flat;
+    int32_t width{};
+    int32_t height{};
+};
+
+Level load_level(const char* path){
+    Level out;
+    
+    std::ifstream file(path);
+    std::string buffer;
+    bool first_row = true;
+    while(file >> buffer){
+        size_t last_comma{};
+        int32_t id{};
+        for(size_t i{}; i < buffer.size(); i++){
+            if (buffer[i] == ','){
+                id = atoi(buffer.substr(last_comma, i - 1).c_str());
+                last_comma = i;
+            }
+        }
+        
+        if(first_row){
+            first_row = false;
+            out.width = out.flat.size();
+        }
+
+        out.flat.push_back(static_cast<Tile>(id));
+    }
+    
+    out.height = out.flat.size() / out.width;
+    return out;
+}
+
+Tile& get_tile(Level& level, int32_t x, int32_t y){
+    return level.flat[y * level.width + x];
+}
 
 struct Global{
     static constexpr int32_t WIDTH = 320;
@@ -39,9 +89,20 @@ struct Global{
     static constexpr float JUMP_ACCELERATION = 11;
     static constexpr float SKIN_WIDTH = 1e-4f;
 
+    Texture spritesheet;
+    
     struct{
-        Texture character;
-    }assets;
+        Sprite grass;
+        Sprite dirt;
+        Sprite platform;
+        Sprite spike;
+        Sprite spike_up;
+        Sprite spike_down;
+        Sprite spike_left;
+        Sprite spike_right;
+
+        Sprite player;
+    }sprites;
 
     struct{
         float direction_x{};
@@ -49,20 +110,8 @@ struct Global{
         bool jump_held{};
     }input;
 
-    BlockType map[10][10]{
-        {S, S, S, S, S, S, S, S, S, S},
-        {S, A, A, A, A, A, A, A, A, S},
-        {S, A, A, A, A, A, A, A, A, S},
-        {S, A, A, A, A, A, A, A, A, S},
-        {S, A, A, A, A, A, A, A, A, S},
-        {S, A, A, A, A, A, A, A, A, S},
-        {S, A, A, A, A, A, A, A, A, S},
-        {S, A, A, A, A, A, A, A, A, S},
-        {S, A, A, A, A, A, A, A, A, S},
-        {S, S, S, S, S, S, S, S, S, S},
-    };
-
     Player player;
+    Level level;
 }g;
 
 float get_direction(float value){
@@ -70,7 +119,17 @@ float get_direction(float value){
 }
 
 void load_assets(){
-    g.assets.character = LoadTexture(ASSETS "sprites/knight.png");
+    g.spritesheet = LoadTexture(ASSETS "spritesheet.png");
+
+    g.sprites.player = Sprite{g.spritesheet, {48, 48, 16, 16}};
+    g.sprites.grass = Sprite{g.spritesheet, {16, 32, 16, 16}};
+    g.sprites.dirt = Sprite{g.spritesheet, {16, 48, 16, 16}};
+    g.sprites.platform = Sprite{g.spritesheet, {16, 0, 16, 16}};
+    g.sprites.spike = Sprite{g.spritesheet, {16, 16, 16, 16}};
+    g.sprites.spike_up = Sprite{g.spritesheet, {0, 0, 16, 16}};
+    g.sprites.spike_down = Sprite{g.spritesheet, {0, 32, 16, 16}};
+    g.sprites.spike_left = Sprite{g.spritesheet, {0, 16, 16, 16}};
+    g.sprites.spike_right = Sprite{g.spritesheet, {0, 48, 16, 16}};
 }
 
 int find_pad() {
@@ -122,8 +181,8 @@ void colisions_x(){
         hurtbox.x = 0 + g.SKIN_WIDTH;
         g.player.vel.x = 0;
     }
-    if (hurtbox.x + hurtbox.width > 10){
-        hurtbox.x = 10 - hurtbox.width - g.SKIN_WIDTH;
+    if (hurtbox.x + hurtbox.width > g.level.width){
+        hurtbox.x = g.level.width - hurtbox.width - g.SKIN_WIDTH;
         g.player.vel.x = 0;
     }
     
@@ -132,14 +191,14 @@ void colisions_x(){
     int32_t start_x = hurtbox.x;
     int32_t end_x = hurtbox.x + hurtbox.width;
     for (int32_t y = start_y; y <= end_y; y++){
-        if (g.map[y][start_x] != A){
+        if (get_tile(g.level, start_x, y) != Tile::AIR){
             hurtbox.x = start_x + 1 + g.SKIN_WIDTH;
             g.player.vel.x = 0;
             break;
         }
     }
     for (int32_t y = start_y; y <= end_y; y++){
-        if (g.map[y][end_x] != A){
+        if (get_tile(g.level, end_x, y) != Tile::AIR){
             hurtbox.x = end_x - hurtbox.width - g.SKIN_WIDTH;
             g.player.vel.x = 0;
             break;
@@ -162,8 +221,8 @@ void colisions_y(){
         hurtbox.y = 0 + g.SKIN_WIDTH;
         g.player.vel.y = 0;
     }
-    if (hurtbox.y + hurtbox.height > 10){
-        hurtbox.y = 10 - hurtbox.height - g.SKIN_WIDTH;
+    if (hurtbox.y + hurtbox.height > g.level.height){
+        hurtbox.y = g.level.height - hurtbox.height - g.SKIN_WIDTH;
         g.player.vel.y = 0;
         g.player.grounded = true;
     }
@@ -173,14 +232,14 @@ void colisions_y(){
     int32_t start_y = hurtbox.y;
     int32_t end_y = hurtbox.y + hurtbox.height;
     for (int32_t x = start_x; x <= end_x; x++){
-        if (g.map[start_y][x] != A){
+        if (get_tile(g.level, x, start_y) != Tile::AIR){
             hurtbox.y = start_y + 1 + g.SKIN_WIDTH;
             g.player.vel.y = 0;
             break;
         }
     }
     for (int32_t x = start_x; x <= end_x; x++){
-        if (g.map[end_y][x] != A){
+        if (get_tile(g.level, x, end_y) != Tile::AIR){
             hurtbox.y = end_y - hurtbox.height - g.SKIN_WIDTH;
             g.player.vel.y = 0;
             g.player.grounded = true;
@@ -221,33 +280,56 @@ void tick(){
         g.player.vel.y = 0;
     }
 
+    if(g.player.vel.x != 0){
+        g.player.facing_left = g.player.vel.x < 0;
+    }
+
     colisions_x();
     colisions_y();
 }
 
 void draw(){
-    for(int32_t y{}; y < 10; y++){
-        for(int32_t x{}; x < 10; x++){
-            if (g.map[y][x]){
-                DrawRectangleGradientEx(
-                    {x * g.TILE_PIXELS, y * g.TILE_PIXELS, g.TILE_PIXELS, g.TILE_PIXELS},
-                    BLUE,
-                    DARKBLUE,
-                    DARKBLUE,
-                    DARKBLUE
-                );
+    for(int32_t y{}; y < g.level.height; y++){
+        for(int32_t x{}; x < g.level.width; x++){
+            Tile tile = get_tile(g.level, x, y);
+            Sprite sprite{};
+            switch (tile){
+                case Tile::AIR: break;
+                case Tile::DIRT: sprite = g.sprites.dirt; break;
+                case Tile::GRASS: sprite = g.sprites.grass; break;
+                case Tile::PLATFORM: sprite = g.sprites.platform; break;
+                case Tile::SPIKE: sprite = g.sprites.spike; break;
+                case Tile::SPIKE_DOWN: sprite = g.sprites.spike_down; break;
+                case Tile::SPIKE_UP: sprite = g.sprites.spike_up; break;
+                case Tile::SPIKE_LEFT: sprite = g.sprites.spike_left; break;
+                case Tile::SPIKE_RIGHT: sprite = g.sprites.spike_right; break;
             }
+            DrawTexturePro(sprite.tex, sprite.rect, {x * g.TILE_PIXELS, y * g.TILE_PIXELS, 16, 16}, {}, {}, WHITE);
         }
     }
 
-    Rectangle player_hurtbox = g.player.hurtbox;
+    /*Rectangle player_hurtbox = g.player.hurtbox;
     player_hurtbox.x += g.player.pos.x;
     player_hurtbox.y += g.player.pos.y;
     player_hurtbox.x *= g.TILE_PIXELS;
     player_hurtbox.y *= g.TILE_PIXELS;
     player_hurtbox.width *= g.TILE_PIXELS;
     player_hurtbox.height *= g.TILE_PIXELS;
-    DrawRectanglePro(player_hurtbox, {}, {}, RED);
+    DrawRectanglePro(player_hurtbox, {}, {}, {255, 0, 0, 100});*/
+
+    Rectangle player_rect = g.sprites.player.rect;
+    if (g.player.facing_left){
+        player_rect.width *= -1;
+    }
+
+    DrawTexturePro(
+        g.sprites.player.tex,
+        player_rect,
+        {(g.player.pos.x - .5f) * g.TILE_PIXELS, (g.player.pos.y - 1) * g.TILE_PIXELS, 16, 16},
+        {},
+        {},
+        WHITE
+    );
 }
 
 void flip_and_draw_target(RenderTexture2D target){
@@ -301,6 +383,8 @@ int main(){
 
     RenderTexture2D target = LoadRenderTexture(g.WIDTH, g.HEIGHT);
     load_assets();
+
+    g.level = load_level(LEVELS "1.csv");
 
     float timer{};
 
