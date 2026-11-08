@@ -6,6 +6,7 @@
 #include <vector>
 #include <fstream>
 #include <string>
+#include <unordered_set>
 
 #include <raylib.h>
 #include <raymath.h>
@@ -51,14 +52,13 @@ Level load_level(const char* path){
         size_t last_comma = -1;
         int32_t id{};
         for(size_t i{}; i < buffer.size(); i++){
-            if (buffer[i] == ','){
+            if (buffer[i] == ',' || i == buffer.size() - 1){
                 id = atoi(buffer.substr(last_comma + 1, i - last_comma).c_str());
                 last_comma = i;
                 out.flat.push_back(static_cast<Tile>(id));
-                std::cout << id << ',';
             }
         }
-        std::cout << '\n';
+
         if(first_row){
             first_row = false;
             out.width = out.flat.size();
@@ -109,6 +109,20 @@ struct Global{
         bool jump_pressed{};
         bool jump_held{};
     }input;
+
+    struct{
+        std::unordered_set<Tile> platform{
+            Tile::PLATFORM,
+        };
+
+        std::unordered_set<Tile> hazard{
+            Tile::SPIKE,
+            Tile::SPIKE_DOWN,
+            Tile::SPIKE_UP,
+            Tile::SPIKE_LEFT,
+            Tile::SPIKE_RIGHT,
+        };
+    }tile_sets;
 
     Player player;
     Level level;
@@ -191,15 +205,36 @@ void colisions_x(){
     int32_t end_y = hurtbox.y + hurtbox.height;
     int32_t start_x = hurtbox.x;
     int32_t end_x = hurtbox.x + hurtbox.width;
+
     for (int32_t y = start_y; y <= end_y; y++){
-        if (get_tile(g.level, start_x, y) != Tile::AIR){
+        Tile tile = get_tile(g.level, start_x, y);
+
+        if(tile == Tile::AIR || g.tile_sets.platform.contains(tile)){
+            continue;
+        }
+        else if(g.tile_sets.hazard.contains(tile)){
+
+        }
+        else{
             hurtbox.x = start_x + 1 + g.SKIN_WIDTH;
             g.player.vel.x = 0;
             break;
         }
     }
+
+    start_x = hurtbox.x;
+    end_x = hurtbox.x + hurtbox.width;
+
     for (int32_t y = start_y; y <= end_y; y++){
-        if (get_tile(g.level, end_x, y) != Tile::AIR){
+        Tile tile = get_tile(g.level, end_x, y);
+
+        if(tile == Tile::AIR || g.tile_sets.platform.contains(tile)){
+            continue;
+        }
+        else if(g.tile_sets.hazard.contains(tile)){
+
+        }
+        else{
             hurtbox.x = end_x - hurtbox.width - g.SKIN_WIDTH;
             g.player.vel.x = 0;
             break;
@@ -220,7 +255,7 @@ void colisions_y(){
 
     if(hurtbox.y < 0){
         hurtbox.y = 0 + g.SKIN_WIDTH;
-        g.player.vel.y = 0;
+        //g.player.vel.y = 0;
     }
     if (hurtbox.y + hurtbox.height > g.level.height){
         hurtbox.y = g.level.height - hurtbox.height - g.SKIN_WIDTH;
@@ -232,15 +267,37 @@ void colisions_y(){
     int32_t end_x = hurtbox.x + hurtbox.width;
     int32_t start_y = hurtbox.y;
     int32_t end_y = hurtbox.y + hurtbox.height;
+
     for (int32_t x = start_x; x <= end_x; x++){
-        if (get_tile(g.level, x, start_y) != Tile::AIR){
+        Tile tile = get_tile(g.level, x, start_y);
+
+        if(tile == Tile::AIR || g.tile_sets.platform.contains(tile)){
+            continue;
+        }
+        else if(g.tile_sets.hazard.contains(tile)){
+
+        }
+        else{
             hurtbox.y = start_y + 1 + g.SKIN_WIDTH;
-            g.player.vel.y = 0;
+            //g.player.vel.y = 0;
             break;
         }
     }
+
+    start_y = hurtbox.y;
+    end_y = hurtbox.y + hurtbox.height;
+
     for (int32_t x = start_x; x <= end_x; x++){
-        if (get_tile(g.level, x, end_y) != Tile::AIR){
+        Tile tile = get_tile(g.level, x, end_y);
+        bool is_platform = g.tile_sets.platform.contains(tile);
+
+        if(tile == Tile::AIR){
+            continue;
+        }
+        else if(g.tile_sets.hazard.contains(tile)){
+
+        }
+        else if((is_platform && floor(hurtbox.y + hurtbox.height) > floor(starting_hurtbox.y + starting_hurtbox.height)) || !is_platform){
             hurtbox.y = end_y - hurtbox.height - g.SKIN_WIDTH;
             g.player.vel.y = 0;
             g.player.grounded = true;
@@ -312,15 +369,6 @@ void draw(){
         }
     }
 
-    /*Rectangle player_hurtbox = g.player.hurtbox;
-    player_hurtbox.x += g.player.pos.x;
-    player_hurtbox.y += g.player.pos.y;
-    player_hurtbox.x *= g.TILE_PIXELS;
-    player_hurtbox.y *= g.TILE_PIXELS;
-    player_hurtbox.width *= g.TILE_PIXELS;
-    player_hurtbox.height *= g.TILE_PIXELS;
-    DrawRectanglePro(player_hurtbox, {}, {}, {255, 0, 0, 100});*/
-
     Rectangle player_rect = g.sprites.player.rect;
     if (g.player.facing_left){
         player_rect.width *= -1;
@@ -334,6 +382,15 @@ void draw(){
         {},
         WHITE
     );
+
+    Rectangle player_hurtbox = g.player.hurtbox;
+    player_hurtbox.x += g.player.pos.x;
+    player_hurtbox.y += g.player.pos.y;
+    player_hurtbox.x *= g.TILE_PIXELS;
+    player_hurtbox.y *= g.TILE_PIXELS;
+    player_hurtbox.width *= g.TILE_PIXELS;
+    player_hurtbox.height *= g.TILE_PIXELS;
+    DrawRectanglePro(player_hurtbox, {}, {}, {255, 0, 0, 100});
 
     EndMode2D();
 }
