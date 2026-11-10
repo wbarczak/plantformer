@@ -28,7 +28,7 @@ enum class Tile{
     DIRT = 13,
 };
 
-struct Player{
+struct Entity{
     Vector2 pos{3, 3};
     Vector2 vel{};
     Rectangle hurtbox{-.25, -.75, .5, .75};
@@ -124,7 +124,7 @@ struct Global{
         };
     }tile_sets;
 
-    Player player;
+    Entity player;
     Level level;
     Camera2D cam{.offset{static_cast<float>(WIDTH) / 2, static_cast<float>(HEIGHT) / 2}, .zoom = 1};
 }g;
@@ -185,20 +185,20 @@ void disable_presses(){
     g.input.jump_pressed = false;
 }
 
-void colisions_x(){
-    Rectangle starting_hurtbox = g.player.hurtbox;
-    starting_hurtbox.x += g.player.pos.x;
-    starting_hurtbox.y += g.player.pos.y;
+void colisions_x(Entity& entity){
+    Rectangle starting_hurtbox = entity.hurtbox;
+    starting_hurtbox.x += entity.pos.x;
+    starting_hurtbox.y += entity.pos.y;
     Rectangle hurtbox = starting_hurtbox;
-    hurtbox.x += g.player.vel.x * g.DELTA_TIME;
+    hurtbox.x += entity.vel.x * g.DELTA_TIME;
 
     if(hurtbox.x < 0){
         hurtbox.x = 0 + g.SKIN_WIDTH;
-        g.player.vel.x = 0;
+        entity.vel.x = 0;
     }
     if (hurtbox.x + hurtbox.width > g.level.width){
         hurtbox.x = g.level.width - hurtbox.width - g.SKIN_WIDTH;
-        g.player.vel.x = 0;
+        entity.vel.x = 0;
     }
     
     int32_t start_y = hurtbox.y;
@@ -217,7 +217,7 @@ void colisions_x(){
         }
         else{
             hurtbox.x = start_x + 1 + g.SKIN_WIDTH;
-            g.player.vel.x = 0;
+            entity.vel.x = 0;
             break;
         }
     }
@@ -236,31 +236,31 @@ void colisions_x(){
         }
         else{
             hurtbox.x = end_x - hurtbox.width - g.SKIN_WIDTH;
-            g.player.vel.x = 0;
+            entity.vel.x = 0;
             break;
         }
     }
 
-    g.player.pos.x += hurtbox.x - starting_hurtbox.x;
+    entity.pos.x += hurtbox.x - starting_hurtbox.x;
 }
 
-void colisions_y(){
-    Rectangle starting_hurtbox = g.player.hurtbox;
-    starting_hurtbox.x += g.player.pos.x;
-    starting_hurtbox.y += g.player.pos.y;
+void colisions_y(Entity& entity){
+    Rectangle starting_hurtbox = entity.hurtbox;
+    starting_hurtbox.x += entity.pos.x;
+    starting_hurtbox.y += entity.pos.y;
     Rectangle hurtbox = starting_hurtbox;
-    hurtbox.y += g.player.vel.y * g.DELTA_TIME;
+    hurtbox.y += entity.vel.y * g.DELTA_TIME;
 
-    g.player.grounded = false;
+    entity.grounded = false;
 
     if(hurtbox.y < 0){
         hurtbox.y = 0 + g.SKIN_WIDTH;
-        //g.player.vel.y = 0;
+        //entity.vel.y = 0;
     }
     if (hurtbox.y + hurtbox.height > g.level.height){
         hurtbox.y = g.level.height - hurtbox.height - g.SKIN_WIDTH;
-        g.player.vel.y = 0;
-        g.player.grounded = true;
+        entity.vel.y = 0;
+        entity.grounded = true;
     }
 
     int32_t start_x = hurtbox.x;
@@ -279,7 +279,7 @@ void colisions_y(){
         }
         else{
             hurtbox.y = start_y + 1 + g.SKIN_WIDTH;
-            //g.player.vel.y = 0;
+            //entity.vel.y = 0;
             break;
         }
     }
@@ -299,13 +299,13 @@ void colisions_y(){
         }
         else if((is_platform && floor(hurtbox.y + hurtbox.height) > floor(starting_hurtbox.y + starting_hurtbox.height)) || !is_platform){
             hurtbox.y = end_y - hurtbox.height - g.SKIN_WIDTH;
-            g.player.vel.y = 0;
-            g.player.grounded = true;
+            entity.vel.y = 0;
+            entity.grounded = true;
             break;
         }
     }
 
-    g.player.pos.y += hurtbox.y - starting_hurtbox.y;
+    entity.pos.y += hurtbox.y - starting_hurtbox.y;
 }
 
 void tick(){
@@ -342,8 +342,8 @@ void tick(){
         g.player.facing_left = g.player.vel.x < 0;
     }
 
-    colisions_x();
-    colisions_y();
+    colisions_x(g.player);
+    colisions_y(g.player);
 }
 
 void draw(){
