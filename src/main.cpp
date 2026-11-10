@@ -73,7 +73,7 @@ Tile& get_tile(Level& level, int32_t x, int32_t y){
     return level.flat[y * level.width + x];
 }
 
-struct Global{
+static struct Global{
     static constexpr int32_t WIDTH = 320;
     static constexpr int32_t HEIGHT = 180;
     const char* WINDOW_NAME = "Platformer";
