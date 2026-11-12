@@ -7,8 +7,8 @@ struct Screen{
     void (*draw) = nullptr;
 };
 
-enum ScreenId{
-    SCREEN_GAME,
+enum class ScreenId{
+    GAME,
 
-    SCREEN_COUNT,
-}
+    COUNT,
+};
