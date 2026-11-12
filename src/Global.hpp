@@ -23,6 +23,7 @@ inline struct Global{
     TileArray tile_defs;
 
     struct{
+        Vector2 mouse{};
         float direction_x{};
         bool jump_pressed{};
         bool jump_held{};

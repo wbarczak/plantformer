@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <cmath>
+#include <iostream>
 
 #include <raylib.h>
 #include <raymath.h>
@@ -15,16 +16,24 @@ void flip_and_draw_target(RenderTexture2D target){
     const float height_ratio = render_height / g.HEIGHT;
 
     Rectangle dest{};
+    // this mouse stuff should be done at the beginning of the frame
+    g.input.mouse = GetMousePosition();
 
     if (height_ratio < width_ratio){
         dest.width = g.WIDTH * height_ratio;
         dest.height = render_height;
         dest.x = (render_width - dest.width) / 2;
+
+        g.input.mouse.x -= dest.x;
+        g.input.mouse /= height_ratio;
     }
     else{
         dest.width = render_width;
         dest.height = g.HEIGHT * width_ratio;
         dest.y = (render_height - dest.height) / 2;
+
+        g.input.mouse.y -= dest.y;
+        g.input.mouse /= width_ratio;
     }
 
     DrawTexturePro(

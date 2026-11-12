@@ -199,8 +199,10 @@ void colisions_y(Entity& entity){
 
 void game_on_enter(){
     game.level.flat.fill(TileId::NONE);
-    for (size_t i{}; i < Level::WIDTH; i++){
-        get_tile(game.level, i, Level::HEIGHT - 1) = TileId::DIRT;
+    for(size_t y = 50; y < Level::HEIGHT; y++){
+        for(size_t x{}; x < Level::WIDTH; x++){
+            get_tile(game.level, x, y) = TileId::DIRT;
+        }
     }
 }
 
@@ -255,7 +257,15 @@ void game_draw(){
             TileId tile = get_tile(game.level, x, y);
             Sprite sprite{};
             switch (tile){
-                case TileId::DIRT: sprite = g.assets.sprites.dirt; break;
+                case TileId::DIRT:{
+                    if (y > 0 && get_tile(game.level, x, y - 1) == TileId::NONE){
+                        sprite = g.assets.sprites.grass;
+                    }
+                    else{
+                        sprite = g.assets.sprites.dirt;
+                    }
+                    break;
+                }
                 case TileId::SPIKE: sprite = g.assets.sprites.spike; break;
                 case TileId::PLATFORM: sprite = g.assets.sprites.platform; break;
             }
