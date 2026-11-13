@@ -28,6 +28,8 @@ static struct GameData{
     Level level;
     Entity player;
     Camera2D cam{.offset{static_cast<float>(g.WIDTH) / 2, static_cast<float>(g.HEIGHT) / 2}, .zoom = 1};
+
+    TileId selected{};
 }game;
 
 void colisions_x(Entity& entity){
@@ -211,6 +213,21 @@ void game_on_exit(){
 }
 
 void game_update(){
+    if(IsKeyPressed(KEY_C)){
+        game.selected = static_cast<TileId>((index(game.selected) + 1) % index(TileId::COUNT));
+    }
+
+    Vector2 cursor_tile_pos = (g.input.mouse - game.cam.offset + game.cam.target) / g.TILE_PIXELS;
+    if(IsMouseButtonDown(MOUSE_BUTTON_LEFT)){
+        TileId& tile = get_tile(game.level, cursor_tile_pos.x, cursor_tile_pos.y);
+        if(tile == TileId::NONE){
+            tile = game.selected;
+        }
+    }
+    else if(IsMouseButtonDown(MOUSE_BUTTON_RIGHT)){
+        get_tile(game.level, cursor_tile_pos.x, cursor_tile_pos.y) = TileId::NONE;
+    }
+
     if(g.input.direction_x < 0){
         game.player.vel.x -= game.PLAYER_ACCELERATION * g.DELTA_TIME;
         game.player.vel.x = std::max(game.player.vel.x, -game.PLAYER_SPEED);
@@ -258,7 +275,9 @@ void game_draw(){
             Sprite sprite{};
             switch (tile){
                 case TileId::DIRT:{
-                    if (y > 0 && get_tile(game.level, x, y - 1) == TileId::NONE){
+                    TileId tile = get_tile(game.level, x, y - 1);
+                    bool valid = valid_tile(tile);
+                    if (y > 0 && ((valid && g.tile_defs[index(tile)].type != TileType::SOLID) || !valid)){
                         sprite = g.assets.sprites.grass;
                     }
                     else{
@@ -266,7 +285,30 @@ void game_draw(){
                     }
                     break;
                 }
-                case TileId::SPIKE: sprite = g.assets.sprites.spike; break;
+                case TileId::SPIKE:{
+                    TileId tile = get_tile(game.level, x, y + 1);
+                    if (y < Level::HEIGHT && valid_tile(tile) && (g.tile_defs[index(tile)].type == TileType::SOLID || g.tile_defs[index(tile)].type == TileType::PLATFORM)){
+                        sprite = g.assets.sprites.spike_up;
+                        break;
+                    }
+                    tile = get_tile(game.level, x, y - 1);
+                    if (y > 0 && valid_tile(tile) && g.tile_defs[index(tile)].type == TileType::SOLID){
+                        sprite = g.assets.sprites.spike_down;
+                        break;
+                    }
+                    tile = get_tile(game.level, x + 1, y);
+                    if (x < Level::WIDTH && valid_tile(tile) && g.tile_defs[index(tile)].type == TileType::SOLID){
+                        sprite = g.assets.sprites.spike_left;
+                        break;
+                    }
+                    tile = get_tile(game.level, x - 1, y);
+                    if (x > 0 && valid_tile(tile) && g.tile_defs[index(tile)].type == TileType::SOLID){
+                        sprite = g.assets.sprites.spike_right;
+                        break;
+                    }
+                    sprite = g.assets.sprites.spike;
+                    break;
+                }
                 case TileId::PLATFORM: sprite = g.assets.sprites.platform; break;
             }
             DrawTexturePro(sprite.tex, sprite.rect, {x * g.TILE_PIXELS, y * g.TILE_PIXELS, 16, 16}, {}, {}, WHITE);
@@ -287,14 +329,33 @@ void game_draw(){
         WHITE
     );
 
-    Rectangle player_hurtbox = game.player.hurtbox;
-    player_hurtbox.x += game.player.pos.x;
-    player_hurtbox.y += game.player.pos.y;
-    player_hurtbox.x *= g.TILE_PIXELS;
-    player_hurtbox.y *= g.TILE_PIXELS;
-    player_hurtbox.width *= g.TILE_PIXELS;
-    player_hurtbox.height *= g.TILE_PIXELS;
-    DrawRectanglePro(player_hurtbox, {}, {}, {255, 0, 0, 100});
+    // Rectangle player_hurtbox = game.player.hurtbox;
+    // player_hurtbox.x += game.player.pos.x;
+    // player_hurtbox.y += game.player.pos.y;
+    // player_hurtbox.x *= g.TILE_PIXELS;
+    // player_hurtbox.y *= g.TILE_PIXELS;
+    // player_hurtbox.width *= g.TILE_PIXELS;
+    // player_hurtbox.height *= g.TILE_PIXELS;
+    // DrawRectanglePro(player_hurtbox, {}, {}, {255, 0, 0, 100});
 
     EndMode2D();
+    
+    Sprite selected{};
+    Rectangle selected_dest{0, 0, 16, 16};
+    switch (game.selected){
+        case TileId::DIRT:
+            selected = g.assets.sprites.grass;
+            break;
+        case TileId::PLATFORM:
+            selected = g.assets.sprites.platform;
+            break;
+        case TileId::SPIKE:
+            selected = g.assets.sprites.spike_up;
+            break;
+        default:
+        break;
+    }
+
+    DrawTexturePro(selected.tex, selected.rect, selected_dest, {}, {}, WHITE);
+    DrawRectangleLinesEx(selected_dest, 1, WHITE);
 }
