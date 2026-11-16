@@ -4,12 +4,38 @@
 #include <array>
 
 #include "Utility.hpp"
+#include "Assets.hpp"
+#include "raylib.h"
 
 enum class TileColision{
     AIR,
     SOLID,
     HAZARD,
     PLATFORM,
+};
+
+struct TileSpriteTouchingSurface{
+    Texture tex{};
+    Rectangle up{}, down{}, left{}, right{}, none{};
+};
+
+struct TileSpriteDifferentTop{
+    Texture tex{};
+    Rectangle top{}, normal{};
+};
+
+struct TileSprite{
+    enum class Type{
+        NORMAL,
+        TOUCHING_SURFACE,
+        DIFFERENT_TOP,
+    };
+
+    union Value{
+        Sprite normal;
+        TileSpriteTouchingSurface touching_surface;
+        TileSpriteDifferentTop different_top;
+    };
 };
 
 struct TileDef{
