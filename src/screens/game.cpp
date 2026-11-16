@@ -61,8 +61,8 @@ void colisions_x(Entity& entity){
         TileDef def = g.tile_defs[index(tile)];
 
         bool break_out{};
-        switch(def.type){
-            case TileType::SOLID:{
+        switch(def.colision){
+            case TileColision::SOLID:{
                 hurtbox.x = start_x + 1 + game.SKIN_WIDTH;
                 entity.vel.x = 0;
                 break_out = true;
@@ -89,8 +89,8 @@ void colisions_x(Entity& entity){
         TileDef def = g.tile_defs[index(tile)];
 
         bool break_out{};
-        switch(def.type){
-            case TileType::SOLID:{
+        switch(def.colision){
+            case TileColision::SOLID:{
                 hurtbox.x = end_x - hurtbox.width - game.SKIN_WIDTH;
                 entity.vel.x = 0;
                 break_out = true;
@@ -141,8 +141,8 @@ void colisions_y(Entity& entity){
         TileDef def = g.tile_defs[index(tile)];
 
         bool break_out{};
-        switch(def.type){
-            case TileType::SOLID:{
+        switch(def.colision){
+            case TileColision::SOLID:{
                 hurtbox.y = start_y + 1 + game.SKIN_WIDTH;
                 //entity.vel.y = 0;
                 break_out = true;
@@ -175,12 +175,12 @@ void colisions_y(Entity& entity){
             entity.grounded = true;
             break_out = true;
         };
-        switch(def.type){
-            case TileType::SOLID:{
+        switch(def.colision){
+            case TileColision::SOLID:{
                 ground_colision();
                 break;
             }
-            case TileType::PLATFORM:{
+            case TileColision::PLATFORM:{
                 if(floor(hurtbox.y + hurtbox.height) > floor(starting_hurtbox.y + starting_hurtbox.height)){
                     ground_colision();
                 }
@@ -219,13 +219,13 @@ void game_update(){
 
     Vector2 cursor_tile_pos = (g.input.mouse - game.cam.offset + game.cam.target) / g.TILE_PIXELS;
     if(IsMouseButtonDown(MOUSE_BUTTON_LEFT)){
+        get_tile(game.level, cursor_tile_pos.x, cursor_tile_pos.y) = TileId::NONE;
+    }
+    else if(IsMouseButtonDown(MOUSE_BUTTON_RIGHT)){
         TileId& tile = get_tile(game.level, cursor_tile_pos.x, cursor_tile_pos.y);
         if(tile == TileId::NONE){
             tile = game.selected;
         }
-    }
-    else if(IsMouseButtonDown(MOUSE_BUTTON_RIGHT)){
-        get_tile(game.level, cursor_tile_pos.x, cursor_tile_pos.y) = TileId::NONE;
     }
 
     if(g.input.direction_x < 0){
@@ -266,7 +266,13 @@ void game_update(){
 }
 
 void game_draw(){
+    DrawTexture(g.assets.background, 0, 0, WHITE);
+    
     game.cam.target = game.player.pos * g.TILE_PIXELS;
+    game.cam.target.x = std::max(game.cam.target.x, 0.f + game.cam.offset.x);
+    game.cam.target.y = std::max(game.cam.target.y, 0.f + game.cam.offset.y);
+    game.cam.target.x = std::min(game.cam.target.x, Level::WIDTH * g.TILE_PIXELS - game.cam.offset.x);
+    game.cam.target.y = std::min(game.cam.target.y, Level::HEIGHT * g.TILE_PIXELS - game.cam.offset.y);
     BeginMode2D(game.cam);
 
     for(int32_t y{}; y < Level::HEIGHT; y++){
@@ -277,7 +283,7 @@ void game_draw(){
                 case TileId::DIRT:{
                     TileId tile = get_tile(game.level, x, y - 1);
                     bool valid = valid_tile(tile);
-                    if (y > 0 && ((valid && g.tile_defs[index(tile)].type != TileType::SOLID) || !valid)){
+                    if (y > 0 && ((valid && g.tile_defs[index(tile)].colision != TileColision::SOLID) || !valid)){
                         sprite = g.assets.sprites.grass;
                     }
                     else{
@@ -287,22 +293,22 @@ void game_draw(){
                 }
                 case TileId::SPIKE:{
                     TileId tile = get_tile(game.level, x, y + 1);
-                    if (y < Level::HEIGHT && valid_tile(tile) && (g.tile_defs[index(tile)].type == TileType::SOLID || g.tile_defs[index(tile)].type == TileType::PLATFORM)){
+                    if (y < Level::HEIGHT && valid_tile(tile) && (g.tile_defs[index(tile)].colision == TileColision::SOLID || g.tile_defs[index(tile)].colision == TileColision::PLATFORM)){
                         sprite = g.assets.sprites.spike_up;
                         break;
                     }
                     tile = get_tile(game.level, x, y - 1);
-                    if (y > 0 && valid_tile(tile) && g.tile_defs[index(tile)].type == TileType::SOLID){
+                    if (y > 0 && valid_tile(tile) && g.tile_defs[index(tile)].colision == TileColision::SOLID){
                         sprite = g.assets.sprites.spike_down;
                         break;
                     }
                     tile = get_tile(game.level, x + 1, y);
-                    if (x < Level::WIDTH && valid_tile(tile) && g.tile_defs[index(tile)].type == TileType::SOLID){
+                    if (x < Level::WIDTH && valid_tile(tile) && g.tile_defs[index(tile)].colision == TileColision::SOLID){
                         sprite = g.assets.sprites.spike_left;
                         break;
                     }
                     tile = get_tile(game.level, x - 1, y);
-                    if (x > 0 && valid_tile(tile) && g.tile_defs[index(tile)].type == TileType::SOLID){
+                    if (x > 0 && valid_tile(tile) && g.tile_defs[index(tile)].colision == TileColision::SOLID){
                         sprite = g.assets.sprites.spike_right;
                         break;
                     }

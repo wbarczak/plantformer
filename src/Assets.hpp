@@ -9,6 +9,7 @@ struct Sprite{
 
 struct Assets{
     Texture spritesheet{};
+    Texture background{};
     
     struct{
         Sprite grass;
@@ -36,4 +37,6 @@ inline void init_assets(Assets& assets){
     assets.sprites.spike_down = Sprite{assets.spritesheet, {0, 32, 16, 16}};
     assets.sprites.spike_left = Sprite{assets.spritesheet, {0, 48, 16, 16}};
     assets.sprites.spike_right = Sprite{assets.spritesheet, {0, 16, 16, 16}};
+
+    assets.background = LoadTexture(ASSETS "background.png");
 }

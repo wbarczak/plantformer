@@ -5,7 +5,7 @@
 
 #include "Utility.hpp"
 
-enum class TileType{
+enum class TileColision{
     AIR,
     SOLID,
     HAZARD,
@@ -13,7 +13,7 @@ enum class TileType{
 };
 
 struct TileDef{
-    TileType type{};
+    TileColision colision{};
 };
 
 enum TileId : int16_t{
@@ -28,9 +28,9 @@ enum TileId : int16_t{
 using TileArray = std::array<TileDef, static_cast<size_t>(TileId::COUNT)>;
 
 inline void init_tiles(TileArray& tiles){
-    tiles[index(TileId::DIRT)].type = TileType::SOLID;
-    tiles[index(TileId::PLATFORM)].type = TileType::PLATFORM;
-    tiles[index(TileId::SPIKE)].type = TileType::HAZARD;
+    tiles[index(TileId::DIRT)].colision = TileColision::SOLID;
+    tiles[index(TileId::PLATFORM)].colision = TileColision::PLATFORM;
+    tiles[index(TileId::SPIKE)].colision = TileColision::HAZARD;
 }
 
 inline bool valid_tile(TileId id){
