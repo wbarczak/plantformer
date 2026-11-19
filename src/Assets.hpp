@@ -20,6 +20,8 @@ struct Assets{
         Sprite spike_down;
         Sprite spike_left;
         Sprite spike_right;
+        Sprite checkpoint;
+        Sprite checkpoint_active;
 
         Sprite player;
     }sprites;
@@ -37,6 +39,8 @@ inline void init_assets(Assets& assets){
     assets.sprites.spike_down = Sprite{assets.spritesheet, {0, 32, 16, 16}};
     assets.sprites.spike_left = Sprite{assets.spritesheet, {0, 48, 16, 16}};
     assets.sprites.spike_right = Sprite{assets.spritesheet, {0, 16, 16, 16}};
+    assets.sprites.checkpoint = Sprite{assets.spritesheet, {32, 0, 16, 16}};
+    assets.sprites.checkpoint_active = Sprite{assets.spritesheet, {32, 16, 16, 16}};
 
     assets.background = LoadTexture(ASSETS "background.png");
 }

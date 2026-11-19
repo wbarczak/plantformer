@@ -47,6 +47,7 @@ enum TileId : int16_t{
     DIRT,
     PLATFORM,
     SPIKE,
+    CHECKPOINT,
 
     COUNT,
 };

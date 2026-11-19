@@ -1,6 +1,7 @@
 #include "game.hpp"
 
 #include <cmath>
+#include <iostream>
 
 #include <raylib.h>
 #include <raymath.h>
@@ -8,10 +9,15 @@
 #include "../Global.hpp"
 #include "../Level.hpp"
 
+struct Position{
+    int32_t x{}, y{};
+};
+
 struct Entity{
-    Vector2 pos{3, 3};
+    Vector2 pos{50, 40};
     Vector2 vel{};
     Rectangle hurtbox{-.25, -.75, .5, .75};
+    Position spawnpoint;
     bool grounded = false;
     bool facing_left = false;
 };
@@ -31,6 +37,17 @@ static struct GameData{
 
     TileId selected{};
 }game;
+
+void respawn(Entity& entity){
+    if(get_tile(game.level, entity.spawnpoint.x, entity.spawnpoint.y) == TileId::CHECKPOINT){
+        entity.pos.x = entity.spawnpoint.x + .5;
+        entity.pos.y = entity.spawnpoint.y + 1 - game.SKIN_WIDTH;
+    }
+    else{
+        entity.pos = {};
+    }
+    entity.vel = {};
+}
 
 void colisions_x(Entity& entity){
     Rectangle starting_hurtbox = entity.hurtbox;
@@ -68,6 +85,10 @@ void colisions_x(Entity& entity){
                 break_out = true;
                 break;
             }
+            case TileColision::HAZARD:{
+                respawn(entity);
+                break;
+            }
             default:{
                 break;
             }
@@ -94,6 +115,10 @@ void colisions_x(Entity& entity){
                 hurtbox.x = end_x - hurtbox.width - game.SKIN_WIDTH;
                 entity.vel.x = 0;
                 break_out = true;
+                break;
+            }
+            case TileColision::HAZARD:{
+                respawn(entity);
                 break;
             }
             default:{
@@ -148,6 +173,10 @@ void colisions_y(Entity& entity){
                 break_out = true;
                 break;
             }
+            case TileColision::HAZARD:{
+                respawn(entity);
+                break;
+            }
             default:{
                 break;
             }
@@ -178,6 +207,10 @@ void colisions_y(Entity& entity){
         switch(def.colision){
             case TileColision::SOLID:{
                 ground_colision();
+                break;
+            }
+            case TileColision::HAZARD:{
+                respawn(entity);
                 break;
             }
             case TileColision::PLATFORM:{
@@ -263,6 +296,13 @@ void game_update(){
 
     colisions_x(game.player);
     colisions_y(game.player);
+
+    Position player_position;
+    player_position.x = game.player.pos.x;
+    player_position.y = game.player.pos.y - game.SKIN_WIDTH;
+    if (get_tile(game.level, player_position.x, player_position.y) == TileId::CHECKPOINT){
+        game.player.spawnpoint = player_position;
+    }
 }
 
 void game_draw(){
@@ -316,6 +356,13 @@ void game_draw(){
                     break;
                 }
                 case TileId::PLATFORM: sprite = g.assets.sprites.platform; break;
+                case TileId::CHECKPOINT:{
+                    if(game.player.spawnpoint.x == x && game.player.spawnpoint.y == y){
+                        sprite = g.assets.sprites.checkpoint_active;
+                        break;
+                    }
+                    sprite = g.assets.sprites.checkpoint;
+                }
             }
             DrawTexturePro(sprite.tex, sprite.rect, {x * g.TILE_PIXELS, y * g.TILE_PIXELS, 16, 16}, {}, {}, WHITE);
         }
@@ -358,8 +405,11 @@ void game_draw(){
         case TileId::SPIKE:
             selected = g.assets.sprites.spike_up;
             break;
+        case TileId::CHECKPOINT:
+            selected = g.assets.sprites.checkpoint;
+            break;
         default:
-        break;
+            break;
     }
 
     DrawTexturePro(selected.tex, selected.rect, selected_dest, {}, {}, WHITE);
