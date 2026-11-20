@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <array>
 #include <variant>
+#include <cstdlib>
 
 #include "Utility.hpp"
 #include "Assets.hpp"

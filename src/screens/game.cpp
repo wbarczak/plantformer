@@ -219,10 +219,7 @@ void colisions_y(Entity& entity){
                 break;
             }
             case TileColision::PLATFORM:{
-                auto newer = hurtbox.y + hurtbox.height;
-                auto old = starting_hurtbox.y + starting_hurtbox.height;
-                std::cout << newer << " " << old << '\n';
-                if(floor(newer) > floor(old)){
+                if(floor(hurtbox.y + hurtbox.height) > floor(starting_hurtbox.y + starting_hurtbox.height)){
                     ground_colision();
                 }
                 break;
