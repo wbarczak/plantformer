@@ -20,6 +20,7 @@ struct Entity{
     Position spawnpoint;
     bool grounded = false;
     bool facing_left = false;
+    bool respawning = false;
 };
 
 static struct GameData{
@@ -39,6 +40,7 @@ static struct GameData{
 }game;
 
 void respawn(Entity& entity){
+    entity.respawning = true;
     if(get_tile(game.level, entity.spawnpoint.x, entity.spawnpoint.y) == TileId::CHECKPOINT){
         entity.pos.x = entity.spawnpoint.x + .5;
         entity.pos.y = entity.spawnpoint.y + 1 - game.SKIN_WIDTH;
@@ -131,7 +133,9 @@ void colisions_x(Entity& entity){
         }
     }
 
-    entity.pos.x += hurtbox.x - starting_hurtbox.x;
+    if(!entity.respawning){
+        entity.pos.x += hurtbox.x - starting_hurtbox.x;
+    }
 }
 
 void colisions_y(Entity& entity){
@@ -204,6 +208,7 @@ void colisions_y(Entity& entity){
             entity.grounded = true;
             break_out = true;
         };
+
         switch(def.colision){
             case TileColision::SOLID:{
                 ground_colision();
@@ -214,7 +219,10 @@ void colisions_y(Entity& entity){
                 break;
             }
             case TileColision::PLATFORM:{
-                if(floor(hurtbox.y + hurtbox.height) > floor(starting_hurtbox.y + starting_hurtbox.height)){
+                auto newer = hurtbox.y + hurtbox.height;
+                auto old = starting_hurtbox.y + starting_hurtbox.height;
+                std::cout << newer << " " << old << '\n';
+                if(floor(newer) > floor(old)){
                     ground_colision();
                 }
                 break;
@@ -229,7 +237,9 @@ void colisions_y(Entity& entity){
         }
     }
 
-    entity.pos.y += hurtbox.y - starting_hurtbox.y;
+    if(!entity.respawning){
+        entity.pos.y += hurtbox.y - starting_hurtbox.y;
+    }
 }
 
 void game_on_enter(){
@@ -294,6 +304,7 @@ void game_update(){
         game.player.facing_left = game.player.vel.x < 0;
     }
 
+    game.player.respawning= false;
     colisions_x(game.player);
     colisions_y(game.player);
 

@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <array>
+#include <variant>
 
 #include "Utility.hpp"
 #include "Assets.hpp"
@@ -14,32 +15,33 @@ enum class TileColision{
     PLATFORM,
 };
 
-struct TileSpriteTouchingSurface{
+enum class TileBehaviour{
+    NONE,
+    CHECKPOINT,
+};
+
+using TileSpriteNormal = Sprite;
+
+struct TileSpriteAttached{
     Texture tex{};
     Rectangle up{}, down{}, left{}, right{}, none{};
 };
 
-struct TileSpriteDifferentTop{
+struct TileSpriteSpecialTop{
     Texture tex{};
     Rectangle top{}, normal{};
 };
 
-struct TileSprite{
-    enum class Type{
-        NORMAL,
-        TOUCHING_SURFACE,
-        DIFFERENT_TOP,
-    };
-
-    union Value{
-        Sprite normal;
-        TileSpriteTouchingSurface touching_surface;
-        TileSpriteDifferentTop different_top;
-    };
-};
+using TileSprite = std::variant<
+    TileSpriteNormal,
+    TileSpriteAttached,
+    TileSpriteSpecialTop
+>;
 
 struct TileDef{
+    TileSprite sprite;
     TileColision colision{};
+    TileBehaviour behaviour{};
 };
 
 enum TileId : int16_t{
