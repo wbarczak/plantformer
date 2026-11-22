@@ -8,14 +8,6 @@
 #include "Tiles.hpp"
 
 inline struct Global{
-    static constexpr int32_t WIDTH = 320;
-    static constexpr int32_t HEIGHT = 180;
-    const char* WINDOW_NAME = "Platformer";
-    static constexpr float SCALE = 4;
-    static constexpr float TILE_PIXELS = 16;
-    static constexpr int32_t TICKRATE = 60;
-    static constexpr float DELTA_TIME = 1.f / TICKRATE;
-
     Assets assets;
     
     std::array<Screen, index(ScreenId::COUNT)> screens;
@@ -28,6 +20,8 @@ inline struct Global{
         bool jump_pressed{};
         bool jump_held{};
     }input;
+
+    Rectangle render_texture_destination_rectangle{};
 }g;
 
 inline int32_t find_pad() {
@@ -37,7 +31,7 @@ inline int32_t find_pad() {
     return -1;
 }
 
-inline void read_input(){
+inline void read_button_input(){
     int32_t pad = find_pad();
     g.input.direction_x = [&]{
         float keyboard = -IsKeyDown(KEY_A) + IsKeyDown(KEY_D);
@@ -64,6 +58,6 @@ inline void read_input(){
     g.input.jump_held = IsKeyDown(KEY_SPACE) || IsGamepadButtonDown(pad, GAMEPAD_BUTTON_RIGHT_FACE_DOWN);
 }
 
-inline void disable_presses(){
+inline void consume_presses(){
     g.input.jump_pressed = false;
 }

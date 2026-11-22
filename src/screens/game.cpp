@@ -8,6 +8,7 @@
 
 #include "../Global.hpp"
 #include "../Level.hpp"
+#include "../Constants.hpp"
 
 struct Position{
     int32_t x{}, y{};
@@ -34,7 +35,7 @@ static struct GameData{
 
     Level level;
     Entity player;
-    Camera2D cam{.offset{static_cast<float>(g.WIDTH) / 2, static_cast<float>(g.HEIGHT) / 2}, .zoom = 1};
+    Camera2D cam{.offset{static_cast<float>(k::window_width) / 2, static_cast<float>(k::window_height) / 2}, .zoom = 1};
 
     TileId selected{};
 }game;
@@ -56,7 +57,7 @@ void colisions_x(Entity& entity){
     starting_hurtbox.x += entity.pos.x;
     starting_hurtbox.y += entity.pos.y;
     Rectangle hurtbox = starting_hurtbox;
-    hurtbox.x += entity.vel.x * g.DELTA_TIME;
+    hurtbox.x += entity.vel.x * k::delta_time;
 
     if(hurtbox.x < 0){
         hurtbox.x = 0 + game.SKIN_WIDTH;
@@ -143,7 +144,7 @@ void colisions_y(Entity& entity){
     starting_hurtbox.x += entity.pos.x;
     starting_hurtbox.y += entity.pos.y;
     Rectangle hurtbox = starting_hurtbox;
-    hurtbox.y += entity.vel.y * g.DELTA_TIME;
+    hurtbox.y += entity.vel.y * k::delta_time;
 
     entity.grounded = false;
 
@@ -257,7 +258,7 @@ void game_update(){
         game.selected = static_cast<TileId>((index(game.selected) + 1) % index(TileId::COUNT));
     }
 
-    Vector2 cursor_tile_pos = (g.input.mouse - game.cam.offset + game.cam.target) / g.TILE_PIXELS;
+    Vector2 cursor_tile_pos = (g.input.mouse - game.cam.offset + game.cam.target) / k::pixels_per_tile;
     if(IsMouseButtonDown(MOUSE_BUTTON_LEFT)){
         get_tile(game.level, cursor_tile_pos.x, cursor_tile_pos.y) = TileId::NONE;
     }
@@ -269,28 +270,28 @@ void game_update(){
     }
 
     if(g.input.direction_x < 0){
-        game.player.vel.x -= game.PLAYER_ACCELERATION * g.DELTA_TIME;
+        game.player.vel.x -= game.PLAYER_ACCELERATION * k::delta_time;
         game.player.vel.x = std::max(game.player.vel.x, -game.PLAYER_SPEED);
     }
     else if(g.input.direction_x > 0){
-        game.player.vel.x += game.PLAYER_ACCELERATION * g.DELTA_TIME;
+        game.player.vel.x += game.PLAYER_ACCELERATION * k::delta_time;
         game.player.vel.x = std::min(game.player.vel.x, game.PLAYER_SPEED);
     }
     else if(game.player.vel.x < 0){
-        game.player.vel.x += game.PLAYER_DECELERATION * g.DELTA_TIME;
+        game.player.vel.x += game.PLAYER_DECELERATION * k::delta_time;
         game.player.vel.x = std::min(game.player.vel.x, 0.f);
     }
     else if (game.player.vel.x > 0){
-        game.player.vel.x -= game.PLAYER_DECELERATION * g.DELTA_TIME;
+        game.player.vel.x -= game.PLAYER_DECELERATION * k::delta_time;
         game.player.vel.x = std::max(game.player.vel.x, 0.f);
     }
     
-    game.player.vel.y += game.GRAVITY_ACCELERATION * g.DELTA_TIME;
+    game.player.vel.y += game.GRAVITY_ACCELERATION * k::delta_time;
     if (g.input.jump_pressed && game.player.grounded){
         game.player.vel.y = -game.JUMP_ACCELERATION;
     }
     else if (game.player.vel.y > 0){
-        game.player.vel.y += game.GRAVITY_ACCELERATION * g.DELTA_TIME;
+        game.player.vel.y += game.GRAVITY_ACCELERATION * k::delta_time;
         game.player.vel.y = std::min(game.player.vel.y, game.GRAVITY_SPEED);
     }
     else if(!g.input.jump_held){
@@ -316,11 +317,11 @@ void game_update(){
 void game_draw(){
     DrawTexture(g.assets.background, 0, 0, WHITE);
     
-    game.cam.target = game.player.pos * g.TILE_PIXELS;
+    game.cam.target = game.player.pos * k::pixels_per_tile;
     game.cam.target.x = std::max(game.cam.target.x, 0.f + game.cam.offset.x);
     game.cam.target.y = std::max(game.cam.target.y, 0.f + game.cam.offset.y);
-    game.cam.target.x = std::min(game.cam.target.x, Level::WIDTH * g.TILE_PIXELS - game.cam.offset.x);
-    game.cam.target.y = std::min(game.cam.target.y, Level::HEIGHT * g.TILE_PIXELS - game.cam.offset.y);
+    game.cam.target.x = std::min(game.cam.target.x, Level::WIDTH * k::pixels_per_tile - game.cam.offset.x);
+    game.cam.target.y = std::min(game.cam.target.y, Level::HEIGHT * k::pixels_per_tile - game.cam.offset.y);
     BeginMode2D(game.cam);
 
     for(int32_t y{}; y < Level::HEIGHT; y++){
@@ -372,7 +373,7 @@ void game_draw(){
                     sprite = g.assets.sprites.checkpoint;
                 }
             }
-            DrawTexturePro(sprite.tex, sprite.rect, {x * g.TILE_PIXELS, y * g.TILE_PIXELS, 16, 16}, {}, {}, WHITE);
+            DrawTexturePro(sprite.tex, sprite.rect, {x * k::pixels_per_tile, y * k::pixels_per_tile, 16, 16}, {}, {}, WHITE);
         }
     }
 
@@ -384,7 +385,7 @@ void game_draw(){
     DrawTexturePro(
         g.assets.sprites.player.tex,
         player_rect,
-        {(game.player.pos.x - .5f) * g.TILE_PIXELS, (game.player.pos.y - 1) * g.TILE_PIXELS, 16, 16},
+        {(game.player.pos.x - .5f) * k::pixels_per_tile, (game.player.pos.y - 1) * k::pixels_per_tile, 16, 16},
         {},
         {},
         WHITE

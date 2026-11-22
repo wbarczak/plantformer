@@ -18,6 +18,7 @@ PRIVATE
 )
 
 target_compile_features(plantformer PRIVATE cxx_std_20)
+target_compile_options(plantformer PRIVATE -Wall -Wpedantic -Werror)
 
 add_compile_definitions(plantformer PRIVATE ASSETS="${PROJECT_SOURCE_DIR}/assets/")
 #add_compile_definitions(plantformer PRIVATE ASSETS="/assets/")
