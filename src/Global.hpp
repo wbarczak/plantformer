@@ -1,8 +1,8 @@
 #pragma once
 
+#include <unordered_map>
 #include <array>
 
-#include "Utility.hpp"
 #include "Screen.hpp"
 #include "Assets.hpp"
 #include "Tiles.hpp"
@@ -10,9 +10,9 @@
 inline struct Global{
     Assets assets;
     
-    std::array<Screen, index(ScreenId::COUNT)> screens;
+    std::array<Screen, SCREEN_COUNT> screens;
 
-    TileArray tile_defs;
+    std::unordered_map<TileId, TileDef> tiles;
 
     struct{
         Vector2 mouse{};
@@ -22,7 +22,53 @@ inline struct Global{
     }input;
 
     Rectangle render_texture_destination_rectangle{};
-}g;
+}global;
+
+inline void init_globals(){
+    auto& tiles = global.tiles;
+
+    tiles[TileId::NONE] = {};
+    tiles[TileId::DIRT].colision = TileColision::SOLID;
+    tiles[TileId::PLATFORM].colision = TileColision::PLATFORM;
+    tiles[TileId::SPIKE].colision = TileColision::HAZARD;
+    tiles[TileId::CHECKPOINT].behaviour = TileBehaviour::CHECKPOINT;
+
+    auto& assets = global.assets;
+
+    assets.spritesheet = LoadTexture(ASSETS "spritesheet.png");
+
+    assets.player = Sprite{assets.spritesheet, {48, 48, 16, 16}};
+
+    assets.tile_sprites[TileId::NONE] = {};
+    assets.tile_sprites[TileId::DIRT] = TileSprite{
+        .type = TileSpriteType::SpecialTop,
+        .tex = assets.spritesheet,
+        .normal = make_spritesheet_origin_rectangle(1, 3),
+        .top = make_spritesheet_origin_rectangle(1, 2),
+    };
+    assets.tile_sprites[TileId::PLATFORM] = TileSprite{
+        .type = TileSpriteType::Normal,
+        .tex = assets.spritesheet,
+        .normal = make_spritesheet_origin_rectangle(1, 1),
+    };
+    assets.tile_sprites[TileId::SPIKE] = TileSprite{
+        .type = TileSpriteType::Attached,
+        .tex = assets.spritesheet,
+        .normal = make_spritesheet_origin_rectangle(1, 0),
+        .up = make_spritesheet_origin_rectangle(0, 0),
+        .down = make_spritesheet_origin_rectangle(0, 2),
+        .left = make_spritesheet_origin_rectangle(0, 3),
+        .right = make_spritesheet_origin_rectangle(0, 1),
+    };
+    assets.tile_sprites[TileId::CHECKPOINT] = TileSprite{
+        .type = TileSpriteType::Checkpoint,
+        .tex = assets.spritesheet,
+        .normal = make_spritesheet_origin_rectangle(2, 0),
+        .active = make_spritesheet_origin_rectangle(2, 1),
+    };
+
+    assets.background = LoadTexture(ASSETS "background.png");
+}
 
 inline int32_t find_pad() {
     for (int i = 0; i < 4; i++) {
@@ -32,8 +78,10 @@ inline int32_t find_pad() {
 }
 
 inline void read_button_input(){
+    auto& input = global.input;
+
     int32_t pad = find_pad();
-    g.input.direction_x = [&]{
+    input.direction_x = [&]{
         float keyboard = -IsKeyDown(KEY_A) + IsKeyDown(KEY_D);
 
         constexpr static float DEADZONE = .1f;
@@ -52,12 +100,12 @@ inline void read_button_input(){
         }
         return 0.f;
     }();
-    if (!g.input.jump_pressed){
-        g.input.jump_pressed = IsKeyPressed(KEY_SPACE) || IsGamepadButtonPressed(pad, GAMEPAD_BUTTON_RIGHT_FACE_DOWN);
+    if (!input.jump_pressed){
+        input.jump_pressed = IsKeyPressed(KEY_SPACE) || IsGamepadButtonPressed(pad, GAMEPAD_BUTTON_RIGHT_FACE_DOWN);
     }
-    g.input.jump_held = IsKeyDown(KEY_SPACE) || IsGamepadButtonDown(pad, GAMEPAD_BUTTON_RIGHT_FACE_DOWN);
+    input.jump_held = IsKeyDown(KEY_SPACE) || IsGamepadButtonDown(pad, GAMEPAD_BUTTON_RIGHT_FACE_DOWN);
 }
 
 inline void consume_presses(){
-    g.input.jump_pressed = false;
+    global.input.jump_pressed = false;
 }

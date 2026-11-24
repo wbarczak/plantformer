@@ -1,46 +1,42 @@
 #pragma once
 
+#include <unordered_map>
+#include <cstdint>
+
 #include <raylib.h>
+
+#include "Constants.hpp"
+#include "Tiles.hpp"
 
 struct Sprite{
     Texture tex{};
     Rectangle rect{};
 };
 
+using TileSpriteNormal = Sprite;
+
+enum class TileSpriteType : uint8_t{
+    Normal,
+    SpecialTop,
+    Attached,
+    Checkpoint,
+};
+
+struct TileSprite{
+    TileSpriteType type{};
+    Texture tex{};
+    Rectangle normal{}, top{}, active{}, up{}, down{}, left{}, right{};
+};
+
+inline Rectangle make_spritesheet_origin_rectangle(float x, float y){
+    return {x * PIXELS_PER_TILE, y * PIXELS_PER_TILE, PIXELS_PER_TILE, PIXELS_PER_TILE};
+}
+
 struct Assets{
     Texture spritesheet{};
     Texture background{};
+
+    Sprite player{};
     
-    struct{
-        Sprite grass;
-        Sprite dirt;
-        Sprite platform;
-        Sprite spike;
-        Sprite spike_up;
-        Sprite spike_down;
-        Sprite spike_left;
-        Sprite spike_right;
-        Sprite checkpoint;
-        Sprite checkpoint_active;
-
-        Sprite player;
-    }sprites;
+    std::unordered_map<TileId, TileSprite> tile_sprites;
 };
-
-inline void init_assets(Assets& assets){
-    assets.spritesheet = LoadTexture(ASSETS "spritesheet.png");
-
-    assets.sprites.player = Sprite{assets.spritesheet, {48, 48, 16, 16}};
-    assets.sprites.grass = Sprite{assets.spritesheet, {16, 32, 16, 16}};
-    assets.sprites.dirt = Sprite{assets.spritesheet, {16, 48, 16, 16}};
-    assets.sprites.platform = Sprite{assets.spritesheet, {16, 16, 16, 16}};
-    assets.sprites.spike = Sprite{assets.spritesheet, {16, 0, 16, 16}};
-    assets.sprites.spike_up = Sprite{assets.spritesheet, {0, 0, 16, 16}};
-    assets.sprites.spike_down = Sprite{assets.spritesheet, {0, 32, 16, 16}};
-    assets.sprites.spike_left = Sprite{assets.spritesheet, {0, 48, 16, 16}};
-    assets.sprites.spike_right = Sprite{assets.spritesheet, {0, 16, 16, 16}};
-    assets.sprites.checkpoint = Sprite{assets.spritesheet, {32, 0, 16, 16}};
-    assets.sprites.checkpoint_active = Sprite{assets.spritesheet, {32, 16, 16, 16}};
-
-    assets.background = LoadTexture(ASSETS "background.png");
-}

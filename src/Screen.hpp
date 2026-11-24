@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdlib>
+
 struct Screen{
     void (*on_enter)() = nullptr;
     void (*on_exit)() = nullptr;
@@ -8,7 +10,7 @@ struct Screen{
 };
 
 enum class ScreenId{
-    GAME,
-
-    COUNT,
+    Game,
 };
+
+static constexpr size_t SCREEN_COUNT = static_cast<size_t>(ScreenId::Game) + 1;

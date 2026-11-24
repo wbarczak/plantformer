@@ -13,14 +13,14 @@
 void calculate_window_info(){
     const float render_width = GetRenderWidth();
     const float render_height = GetRenderHeight();
-    const float width_ratio = render_width / k::window_width;
-    const float height_ratio = render_height / k::window_height;
+    const float width_ratio = render_width / WINDOW_WIDTH;
+    const float height_ratio = render_height / WINDOW_HEIGHT;
 
     Rectangle dest{};
     Vector2 mouse_pos = GetMousePosition();
 
     if (height_ratio < width_ratio){
-        dest.width = k::window_width * height_ratio;
+        dest.width = WINDOW_WIDTH * height_ratio;
         dest.height = render_height;
         dest.x = (render_width - dest.width) / 2;
 
@@ -29,20 +29,20 @@ void calculate_window_info(){
     }
     else{
         dest.width = render_width;
-        dest.height = k::window_height * width_ratio;
+        dest.height = WINDOW_HEIGHT * width_ratio;
         dest.y = (render_height - dest.height) / 2;
 
         mouse_pos.y -= dest.y;
         mouse_pos /= width_ratio;
     }
 
-    g.input.mouse = mouse_pos;
-    g.render_texture_destination_rectangle = dest;
+    global.input.mouse = mouse_pos;
+    global.render_texture_destination_rectangle = dest;
 }
 
 int main(){
     SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE);
-    InitWindow( k::window_width * k::default_window_scale, k::window_height * k::default_window_scale, k::window_name);
+    InitWindow(WINDOW_WIDTH * DEFAULT_WINDOW_SCALE, WINDOW_HEIGHT * DEFAULT_WINDOW_SCALE, WINDOW_NAME);
 
     char* db = LoadFileText("gamecontrollerdb.txt");
     if (db) {
@@ -50,9 +50,8 @@ int main(){
         UnloadFileText(db);
     }
 
-    RenderTexture2D target = LoadRenderTexture(k::window_width, k::window_height);
-    init_assets(g.assets);
-    init_tiles(g.tile_defs);
+    RenderTexture2D target = LoadRenderTexture(WINDOW_WIDTH, WINDOW_HEIGHT);
+    init_globals();
 
     game_on_enter();
 
@@ -63,8 +62,8 @@ int main(){
 
         timer += GetFrameTime();
         timer = std::min(timer, .2f);
-        while (timer >= k::delta_time){
-            timer -= k::delta_time;
+        while (timer >= DT){
+            timer -= DT;
             game_update();
             consume_presses();
         }
@@ -80,8 +79,8 @@ int main(){
 
         DrawTexturePro(
             target.texture, 
-            {0, 0, k::window_width, -k::window_height}, 
-            g.render_texture_destination_rectangle,
+            {0, 0, WINDOW_WIDTH, -WINDOW_HEIGHT}, 
+            global.render_texture_destination_rectangle,
             {},
             {}, 
             WHITE
