@@ -1,71 +1,63 @@
 #include <algorithm>
 #include <cstdlib>
 #include <cmath>
-#include <iostream>
 
 #include <raylib.h>
 #include <raymath.h>
 
 #include "Global.hpp"
-#include "screens/game.hpp"
 #include "Constants.hpp"
 
-void calculate_window_info(){
+Rectangle inline calculate_window_destination(){
     const float render_width = GetRenderWidth();
     const float render_height = GetRenderHeight();
     const float width_ratio = render_width / WINDOW_WIDTH;
     const float height_ratio = render_height / WINDOW_HEIGHT;
 
     Rectangle dest{};
-    Vector2 mouse_pos = GetMousePosition();
 
     if (height_ratio < width_ratio){
         dest.width = WINDOW_WIDTH * height_ratio;
         dest.height = render_height;
         dest.x = (render_width - dest.width) / 2;
-
-        mouse_pos.x -= dest.x;
-        mouse_pos /= height_ratio;
     }
     else{
         dest.width = render_width;
         dest.height = WINDOW_HEIGHT * width_ratio;
         dest.y = (render_height - dest.height) / 2;
-
-        mouse_pos.y -= dest.y;
-        mouse_pos /= width_ratio;
     }
 
-    global.input.mouse = mouse_pos;
-    global.render_texture_destination_rectangle = dest;
+    return dest;
 }
 
 int main(){
     SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE);
     InitWindow(WINDOW_WIDTH * DEFAULT_WINDOW_SCALE, WINDOW_HEIGHT * DEFAULT_WINDOW_SCALE, WINDOW_NAME);
 
-    char* db = LoadFileText("gamecontrollerdb.txt");
-    if (db) {
-        SetGamepadMappings(db);
-        UnloadFileText(db);
-    }
+    // char* db = LoadFileText("gamecontrollerdb.txt");
+    // if (db) {
+    //     SetGamepadMappings(db);
+    //     UnloadFileText(db);
+    // }
+
+    init_global();
+    ScreenId active_screen_id = global.active_screen_id;
+    const Screen* active_screen = &global.screens.at(active_screen_id);
+    active_screen->on_enter();
 
     RenderTexture2D target = LoadRenderTexture(WINDOW_WIDTH, WINDOW_HEIGHT);
-    init_globals();
-
-    game_on_enter();
 
     float timer{};
     while (!WindowShouldClose()){
-        calculate_window_info();
-        read_button_input();
+        global.render_texture_destination_rectangle = calculate_window_destination();
+        read_button_input(global.input, global.render_texture_destination_rectangle);
 
         timer += GetFrameTime();
         timer = std::min(timer, .2f);
         while (timer >= DT){
             timer -= DT;
-            game_update();
-            consume_presses();
+            active_screen->update();
+            consume_presses(global.input);
         }
 
         BeginDrawing();
@@ -73,7 +65,7 @@ int main(){
         BeginTextureMode(target);
         ClearBackground(DARKGRAY);
 
-        game_draw();
+        active_screen->draw();
 
         EndTextureMode();
 
@@ -87,9 +79,15 @@ int main(){
         );
 
         EndDrawing();
+
+        if(active_screen_id != global.active_screen_id){
+            active_screen->on_exit();
+            active_screen = &global.screens.at(global.active_screen_id);
+            active_screen->on_enter();
+        }
     }
 
-    game_on_exit();
+    active_screen->on_exit();
 
     CloseWindow();
 }

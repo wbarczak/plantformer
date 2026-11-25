@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <cstdlib>
+#include <unordered_map>
 
 enum class TileColision : uint8_t{
     Air,
@@ -15,7 +16,7 @@ enum class TileBehaviour : uint8_t{
     Checkpoint,
 };
 
-struct TileDef{
+struct Tile{
     TileColision colision{};
     TileBehaviour behaviour{};
 };
@@ -29,3 +30,17 @@ enum TileId : int16_t{
 };
 
 static constexpr size_t TILE_COUNT = static_cast<size_t>(TileId::Checkpoint) + 1;
+
+using Tiles = std::unordered_map<TileId, Tile>;
+
+Tiles inline make_tiles(){
+    Tiles tiles;
+
+    tiles[TileId::None] = {};
+    tiles[TileId::Dirt].colision = TileColision::Solid;
+    tiles[TileId::Platform].colision = TileColision::Platform;
+    tiles[TileId::Spike].colision = TileColision::Hazard;
+    tiles[TileId::Checkpoint].behaviour = TileBehaviour::Checkpoint;
+
+    return tiles;
+}
