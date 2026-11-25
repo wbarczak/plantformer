@@ -1,6 +1,7 @@
 #include "game.hpp"
 
 #include <cmath>
+#include <algorithm>
 
 #include <raylib.h>
 #include <raymath.h>
@@ -14,11 +15,17 @@ static struct GameData{
     World world;
     Camera2D cam{.offset{static_cast<float>(WINDOW_WIDTH) / 2, static_cast<float>(WINDOW_HEIGHT) / 2}, .zoom = 1};
 
-    TileId selected{};
+    int32_t selected{};
+
+    bool inv_on{};
+    ItemStack mouse{};
 }game;
+
+static constexpr int32_t OFFSET_BETWEEN_SLOTS = 2;
 
 void game_on_enter(){
     game.world = make_new_world();
+    game.world.inv = make_new_inventory();
 }
 
 void game_on_exit(){
@@ -29,18 +36,58 @@ void game_update(){
     const auto& input = global.input;
     auto& world = game.world;
 
-    if(input.cycle_pressed){
-        game.selected = static_cast<TileId>(static_cast<size_t>(game.selected + 1) % TILE_COUNT);
+    if(input.toggle_inventory){
+        game.inv_on = !game.inv_on;
+        if(!game.inv_on){
+            bool break_out{};
+            for(auto& row : world.inv.items){
+                for(auto& item : row){
+                    if(item.item_id == ItemId::Air){
+                        item = game.mouse;
+                        game.mouse = {};
+                        break_out = true;
+                        break;
+                    }
+                }
+                if(break_out){
+                    break;
+                }
+            }
+        }
+    }
+
+    bool clicked_inv{};
+    const int32_t inv_rows_to_display = game.inv_on? INVENTORY_ITEM_COUNT_ON_Y_AXIS : 1;
+    Rectangle slot_rect{.width = PIXELS_PER_TILE, .height = PIXELS_PER_TILE};
+    const int32_t which_x = static_cast<int32_t>(input.mouse.x) / (static_cast<int32_t>(PIXELS_PER_TILE) + OFFSET_BETWEEN_SLOTS);
+    const int32_t which_y = static_cast<int32_t>(input.mouse.y) / (static_cast<int32_t>(PIXELS_PER_TILE) + OFFSET_BETWEEN_SLOTS);
+    if(which_x >= 0 && which_x < INVENTORY_ITEM_COUNT_ON_X_AXIS && which_x >= 0 && which_y < inv_rows_to_display){
+        slot_rect.x = which_x * (PIXELS_PER_TILE + OFFSET_BETWEEN_SLOTS);
+        slot_rect.y = which_y * (PIXELS_PER_TILE + OFFSET_BETWEEN_SLOTS);
+
+        if(CheckCollisionPointRec(input.mouse, slot_rect) && input.left_click){
+            if(!game.inv_on){
+                game.selected = which_x;
+            }
+            else{
+                std::swap(game.mouse, world.inv.items[which_y][which_x]);
+            }
+            clicked_inv = true;
+        }
     }
 
     Vector2 cursor_tile_pos = (input.mouse - game.cam.offset + game.cam.target) / PIXELS_PER_TILE;
-    if(input.break_held){
+    if(input.break_held && !clicked_inv){
         world.map[cursor_tile_pos.y][cursor_tile_pos.x] = TileId::None;
     }
-    else if(input.place_held){
+    else if(input.place_held && !clicked_inv){
         TileId& tile = world.map[cursor_tile_pos.y][cursor_tile_pos.x];
+
         if(tile == TileId::None){
-            tile = game.selected;
+            auto& item = global.items.at(world.inv.items[TOOLBAR_INVENTORY_ROW][game.selected].item_id);
+            if(item.type == ItemType::Tile){
+                tile = item.tile;
+            }
         }
     }
 
@@ -106,6 +153,7 @@ void game_draw(){
     DrawTexture(global.assets.background, 0, 0, WHITE);
     
     game.cam.target = world.player.pos * PIXELS_PER_TILE;
+    game.cam.target.y -= PIXELS_PER_TILE * .5f;
     game.cam.target.x = std::max(game.cam.target.x, 0.f + game.cam.offset.x);
     game.cam.target.y = std::max(game.cam.target.y, 0.f + game.cam.offset.y);
     game.cam.target.x = std::min(game.cam.target.x, WORLD_WIDTH * PIXELS_PER_TILE - game.cam.offset.x);
@@ -205,25 +253,24 @@ void game_draw(){
 
     EndMode2D();
     
-    // Sprite selected{};
-    // Rectangle selected_dest{0, 0, 16, 16};
-    // switch (game.selected){
-    //     case TileId::DIRT:
-    //         selected = global.assets.sprites.grass;
-    //         break;
-    //     case TileId::PLATFORM:
-    //         selected = global.assets.sprites.platform;
-    //         break;
-    //     case TileId::SPIKE:
-    //         selected = global.assets.sprites.spike_up;
-    //         break;
-    //     case TileId::CHECKPOINT:
-    //         selected = global.assets.sprites.checkpoint;
-    //         break;
-    //     default:
-    //         break;
-    // }
+    Rectangle slot_dest{.width = PIXELS_PER_TILE, .height = PIXELS_PER_TILE};
+    for(auto& row : world.inv.items){
+        for(auto& item : row){
+            DrawRectangleRec(slot_dest, BLACK);
+            Sprite item_sprite = global.assets.item_sprites.at(item.item_id);
+            DrawTexturePro(item_sprite.tex, item_sprite.rect, slot_dest, {}, {}, WHITE);
+            if(&item == &world.inv.items[0][game.selected]){
+                DrawRectangleLinesEx(slot_dest, 1, WHITE);
+            }
+            slot_dest.x += PIXELS_PER_TILE + OFFSET_BETWEEN_SLOTS;
+        }
+        if (!game.inv_on){
+            break;
+        }
+        slot_dest.x = 0;
+        slot_dest.y += PIXELS_PER_TILE + OFFSET_BETWEEN_SLOTS;
+    }
 
-    // DrawTexturePro(selected.tex, selected.rect, selected_dest, {}, {}, WHITE);
-    // DrawRectangleLinesEx(selected_dest, 1, WHITE);
+    Sprite mouse_sprite = global.assets.item_sprites.at(game.mouse.item_id);
+    DrawTexturePro(mouse_sprite.tex, mouse_sprite.rect, {global.input.mouse.x, global.input.mouse.y, PIXELS_PER_TILE, PIXELS_PER_TILE}, {}, {}, WHITE);
 }

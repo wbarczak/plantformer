@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <cstdlib>
 
 static constexpr int32_t WINDOW_WIDTH = 320;
 static constexpr int32_t WINDOW_HEIGHT = 180;
@@ -25,6 +26,7 @@ static constexpr float SKIN_WIDTH = 1e-4f;
 
 static constexpr float Y_THRESHHOLD_TO_GO_DOWN_A_PLATFORM = .8;
 
-static constexpr int32_t INVENTORY_ITEM_COUNT_ON_X_AXIS = 10;
-static constexpr int32_t INVENTORY_ITEM_COUNT_ON_Y_AXIS = 5;
+static constexpr int32_t INVENTORY_ITEM_COUNT_ON_X_AXIS = 5;
+static constexpr int32_t INVENTORY_ITEM_COUNT_ON_Y_AXIS = 3;
 static constexpr int32_t MAX_STACK_SIZE = 1000;
+static constexpr size_t TOOLBAR_INVENTORY_ROW = 0;

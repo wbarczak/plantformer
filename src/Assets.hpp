@@ -78,8 +78,6 @@ Assets inline make_assets(){
         .active = make_spritesheet_source_rectangle(2, 1),
     };
 
-    assets.background = LoadTexture(ASSETS "background.png");
-
     assets.item_sprites[ItemId::Air] = {};
     assets.item_sprites[ItemId::TileDirt] = Sprite{
         .tex = assets.spritesheet,
@@ -97,6 +95,8 @@ Assets inline make_assets(){
         .tex = assets.spritesheet,
         .rect = make_spritesheet_source_rectangle(2, 1)
     };
+
+    assets.background = LoadTexture(ASSETS "background.png");
     
     return assets;
 }
