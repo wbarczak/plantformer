@@ -42,7 +42,7 @@ static struct GameData{
 
 void respawn(Entity& entity){
     entity.respawning = true;
-    if(get_tile(game.level, entity.spawnpoint.x, entity.spawnpoint.y) == TileId::CHECKPOINT){
+    if(get_tile(game.level, entity.spawnpoint.x, entity.spawnpoint.y) == TileId::Checkpoint){
         entity.pos.x = entity.spawnpoint.x + .5;
         entity.pos.y = entity.spawnpoint.y + 1 - game.SKIN_WIDTH;
     }
@@ -79,13 +79,13 @@ void colisions_x(Entity& entity){
 
         bool break_out{};
         switch(tile.colision){
-            case TileColision::SOLID:{
+            case TileColision::Solid:{
                 hurtbox.x = start_x + 1 + game.SKIN_WIDTH;
                 entity.vel.x = 0;
                 break_out = true;
                 break;
             }
-            case TileColision::HAZARD:{
+            case TileColision::Hazard:{
                 respawn(entity);
                 break;
             }
@@ -108,13 +108,13 @@ void colisions_x(Entity& entity){
 
         bool break_out{};
         switch(tile.colision){
-            case TileColision::SOLID:{
+            case TileColision::Solid:{
                 hurtbox.x = end_x - hurtbox.width - game.SKIN_WIDTH;
                 entity.vel.x = 0;
                 break_out = true;
                 break;
             }
-            case TileColision::HAZARD:{
+            case TileColision::Hazard:{
                 respawn(entity);
                 break;
             }
@@ -163,13 +163,13 @@ void colisions_y(Entity& entity){
 
         bool break_out{};
         switch(tile.colision){
-            case TileColision::SOLID:{
+            case TileColision::Solid:{
                 hurtbox.y = start_y + 1 + game.SKIN_WIDTH;
                 //entity.vel.y = 0;
                 break_out = true;
                 break;
             }
-            case TileColision::HAZARD:{
+            case TileColision::Hazard:{
                 respawn(entity);
                 break;
             }
@@ -199,15 +199,15 @@ void colisions_y(Entity& entity){
         };
 
         switch(tile.colision){
-            case TileColision::SOLID:{
+            case TileColision::Solid:{
                 ground_colision();
                 break;
             }
-            case TileColision::HAZARD:{
+            case TileColision::Hazard:{
                 respawn(entity);
                 break;
             }
-            case TileColision::PLATFORM:{
+            case TileColision::Platform:{
                 if(floor(hurtbox.y + hurtbox.height) > floor(starting_hurtbox.y + starting_hurtbox.height)){
                     ground_colision();
                 }
@@ -229,10 +229,10 @@ void colisions_y(Entity& entity){
 }
 
 void game_on_enter(){
-    game.level.flat.fill(TileId::NONE);
+    game.level.flat.fill(TileId::None);
     for(size_t y = 50; y < Level::HEIGHT; y++){
         for(size_t x{}; x < Level::WIDTH; x++){
-            get_tile(game.level, x, y) = TileId::DIRT;
+            get_tile(game.level, x, y) = TileId::Dirt;
         }
     }
 }
@@ -248,11 +248,11 @@ void game_update(){
 
     Vector2 cursor_tile_pos = (global.input.mouse - game.cam.offset + game.cam.target) / PIXELS_PER_TILE;
     if(IsMouseButtonDown(MOUSE_BUTTON_LEFT)){
-        get_tile(game.level, cursor_tile_pos.x, cursor_tile_pos.y) = TileId::NONE;
+        get_tile(game.level, cursor_tile_pos.x, cursor_tile_pos.y) = TileId::None;
     }
     else if(IsMouseButtonDown(MOUSE_BUTTON_RIGHT)){
         TileId& tile = get_tile(game.level, cursor_tile_pos.x, cursor_tile_pos.y);
-        if(tile == TileId::NONE){
+        if(tile == TileId::None){
             tile = game.selected;
         }
     }
@@ -299,7 +299,7 @@ void game_update(){
     Position player_position;
     player_position.x = game.player.pos.x;
     player_position.y = game.player.pos.y - game.SKIN_WIDTH;
-    if (get_tile(game.level, player_position.x, player_position.y) == TileId::CHECKPOINT){
+    if (get_tile(game.level, player_position.x, player_position.y) == TileId::Checkpoint){
         game.player.spawnpoint = player_position;
     }
 }
@@ -350,7 +350,7 @@ void game_draw(){
                         }
 
                         auto& tile_colision = global.tiles.at(get_tile(game.level, test_x, test_y)).colision;
-                        return tile_colision == TileColision::SOLID || (tile_colision == TileColision::PLATFORM && test_y == y + 1);
+                        return tile_colision == TileColision::Solid || (tile_colision == TileColision::Platform && test_y == y + 1);
                     };
 
                     if(is_solid(x, y + 1)){

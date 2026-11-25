@@ -28,7 +28,7 @@ struct TileSprite{
     Rectangle normal{}, top{}, active{}, up{}, down{}, left{}, right{};
 };
 
-inline Rectangle make_spritesheet_origin_rectangle(float x, float y){
+inline Rectangle make_spritesheet_source_rectangle(float x, float y){
     return {x * PIXELS_PER_TILE, y * PIXELS_PER_TILE, PIXELS_PER_TILE, PIXELS_PER_TILE};
 }
 

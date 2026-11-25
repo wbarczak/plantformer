@@ -27,11 +27,11 @@ inline struct Global{
 inline void init_globals(){
     auto& tiles = global.tiles;
 
-    tiles[TileId::NONE] = {};
-    tiles[TileId::DIRT].colision = TileColision::SOLID;
-    tiles[TileId::PLATFORM].colision = TileColision::PLATFORM;
-    tiles[TileId::SPIKE].colision = TileColision::HAZARD;
-    tiles[TileId::CHECKPOINT].behaviour = TileBehaviour::CHECKPOINT;
+    tiles[TileId::None] = {};
+    tiles[TileId::Dirt].colision = TileColision::Solid;
+    tiles[TileId::Platform].colision = TileColision::Platform;
+    tiles[TileId::Spike].colision = TileColision::Hazard;
+    tiles[TileId::Checkpoint].behaviour = TileBehaviour::Checkpoint;
 
     auto& assets = global.assets;
 
@@ -39,32 +39,32 @@ inline void init_globals(){
 
     assets.player = Sprite{assets.spritesheet, {48, 48, 16, 16}};
 
-    assets.tile_sprites[TileId::NONE] = {};
-    assets.tile_sprites[TileId::DIRT] = TileSprite{
+    assets.tile_sprites[TileId::None] = {};
+    assets.tile_sprites[TileId::Dirt] = TileSprite{
         .type = TileSpriteType::SpecialTop,
         .tex = assets.spritesheet,
-        .normal = make_spritesheet_origin_rectangle(1, 3),
-        .top = make_spritesheet_origin_rectangle(1, 2),
+        .normal = make_spritesheet_source_rectangle(1, 3),
+        .top = make_spritesheet_source_rectangle(1, 2),
     };
-    assets.tile_sprites[TileId::PLATFORM] = TileSprite{
+    assets.tile_sprites[TileId::Platform] = TileSprite{
         .type = TileSpriteType::Normal,
         .tex = assets.spritesheet,
-        .normal = make_spritesheet_origin_rectangle(1, 1),
+        .normal = make_spritesheet_source_rectangle(1, 1),
     };
-    assets.tile_sprites[TileId::SPIKE] = TileSprite{
+    assets.tile_sprites[TileId::Spike] = TileSprite{
         .type = TileSpriteType::Attached,
         .tex = assets.spritesheet,
-        .normal = make_spritesheet_origin_rectangle(1, 0),
-        .up = make_spritesheet_origin_rectangle(0, 0),
-        .down = make_spritesheet_origin_rectangle(0, 2),
-        .left = make_spritesheet_origin_rectangle(0, 3),
-        .right = make_spritesheet_origin_rectangle(0, 1),
+        .normal = make_spritesheet_source_rectangle(1, 0),
+        .up = make_spritesheet_source_rectangle(0, 0),
+        .down = make_spritesheet_source_rectangle(0, 2),
+        .left = make_spritesheet_source_rectangle(0, 3),
+        .right = make_spritesheet_source_rectangle(0, 1),
     };
-    assets.tile_sprites[TileId::CHECKPOINT] = TileSprite{
+    assets.tile_sprites[TileId::Checkpoint] = TileSprite{
         .type = TileSpriteType::Checkpoint,
         .tex = assets.spritesheet,
-        .normal = make_spritesheet_origin_rectangle(2, 0),
-        .active = make_spritesheet_origin_rectangle(2, 1),
+        .normal = make_spritesheet_source_rectangle(2, 0),
+        .active = make_spritesheet_source_rectangle(2, 1),
     };
 
     assets.background = LoadTexture(ASSETS "background.png");
