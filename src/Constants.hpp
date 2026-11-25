@@ -22,3 +22,5 @@ static constexpr float GRAVITY_SPEED = 15;
 static constexpr float GRAVITY_ACCELERATION = 20;
 static constexpr float JUMP_ACCELERATION = 11;
 static constexpr float SKIN_WIDTH = 1e-4f;
+
+static constexpr float Y_THRESHHOLD_TO_GO_DOWN_A_PLATFORM = .8;

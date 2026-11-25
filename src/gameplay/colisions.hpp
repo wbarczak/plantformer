@@ -166,6 +166,9 @@ void inline colisions_y(const Tilemap& map, Entity& entity){
                 break;
             }
             case TileColision::Platform:{
+                if(global.input.dir.y >= Y_THRESHHOLD_TO_GO_DOWN_A_PLATFORM && global.input.jump_held){
+                    break;
+                }
                 if(floor(hurtbox.y + hurtbox.height) > floor(starting_hurtbox.y + starting_hurtbox.height)){
                     ground_colision();
                 }

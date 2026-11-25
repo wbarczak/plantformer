@@ -44,6 +44,17 @@ void game_update(){
         }
     }
 
+    bool could_be_platforms_under_player = world.player.grounded && world.player.pos.y + SKIN_WIDTH < WORLD_HEIGHT;
+    bool platforms_under_player{};
+    if (could_be_platforms_under_player){
+        const float y_position = world.player.pos.y + world.player.hurtbox.y + world.player.hurtbox.height + SKIN_WIDTH;
+        auto& tile1 = global.tiles.at(world.map[y_position][world.player.pos.x + world.player.hurtbox.x]);
+        auto& tile2 = global.tiles.at(world.map[y_position][world.player.pos.x + world.player.hurtbox.x + world.player.hurtbox.width]);
+        
+        platforms_under_player = (tile1.colision == TileColision::Air || tile1.colision == TileColision::Platform)
+            && (tile2.colision == TileColision::Air || tile2.colision == TileColision::Platform);
+    }
+
     if(input.dir.x < 0){
         world.player.vel.x -= PLAYER_ACCELERATION * DT;
         world.player.vel.x = std::max(world.player.vel.x, -PLAYER_SPEED);
@@ -62,7 +73,7 @@ void game_update(){
     }
     
     world.player.vel.y += GRAVITY_ACCELERATION * DT;
-    if (input.jump_pressed && world.player.grounded){
+    if (input.jump_pressed && world.player.grounded && !(platforms_under_player && input.dir.y >= Y_THRESHHOLD_TO_GO_DOWN_A_PLATFORM)){
         world.player.vel.y = -JUMP_ACCELERATION;
     }
     else if (world.player.vel.y > 0){
