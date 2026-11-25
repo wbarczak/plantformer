@@ -37,7 +37,6 @@ void inline colisions_x(const Tilemap& map, Entity& entity){
         TileId tile_id = map[y][start_x];
         auto& tile = tiles.at(tile_id);
 
-        bool break_out{};
         switch(tile.colision){
             case TileColision::Solid:{
                 hurtbox.x = start_x + 1 + SKIN_WIDTH;
@@ -48,13 +47,9 @@ void inline colisions_x(const Tilemap& map, Entity& entity){
                 respawn(map, entity);
                 break;
             }
-            default:{
+            case TileColision::Air:
+            case TileColision::Platform:
                 break;
-            }
-        }
-
-        if(break_out){
-            break;
         }
     }
 
@@ -65,7 +60,6 @@ void inline colisions_x(const Tilemap& map, Entity& entity){
         TileId tile_id = map[y][end_x];
         auto& tile = tiles.at(tile_id);
 
-        bool break_out{};
         switch(tile.colision){
             case TileColision::Solid:{
                 hurtbox.x = end_x - hurtbox.width - SKIN_WIDTH;
@@ -76,13 +70,9 @@ void inline colisions_x(const Tilemap& map, Entity& entity){
                 respawn(map, entity);
                 break;
             }
-            default:{
+            case TileColision::Air:
+            case TileColision::Platform:
                 break;
-            }
-        }
-
-        if(break_out){
-            break;
         }
     }
 
@@ -121,7 +111,6 @@ void inline colisions_y(const Tilemap& map, Entity& entity){
         TileId tile_id = map[start_y][x];
         auto& tile = tiles.at(tile_id);
 
-        bool break_out{};
         switch(tile.colision){
             case TileColision::Solid:{
                 hurtbox.y = start_y + 1 + SKIN_WIDTH;
@@ -132,13 +121,9 @@ void inline colisions_y(const Tilemap& map, Entity& entity){
                 respawn(map, entity);
                 break;
             }
-            default:{
+            case TileColision::Air:
+            case TileColision::Platform:
                 break;
-            }
-        }
-
-        if(break_out){
-            break;
         }
     }
 
@@ -149,7 +134,6 @@ void inline colisions_y(const Tilemap& map, Entity& entity){
         TileId tile_id = map[end_y][x];
         auto& tile = tiles.at(tile_id);
 
-        bool break_out{};
         auto ground_colision = [&]{
             hurtbox.y = end_y - hurtbox.height - SKIN_WIDTH;
             entity.vel.y = 0;
@@ -174,13 +158,8 @@ void inline colisions_y(const Tilemap& map, Entity& entity){
                 }
                 break;
             }
-            default:{
+            case TileColision::Air:
                 break;
-            }
-        }
-
-        if(break_out){
-            break;
         }
     }
 

@@ -6,6 +6,7 @@
 
 #include "Constants.hpp"
 #include "Tiles.hpp"
+#include "Inventory.hpp"
 
 struct Position{
     int32_t x{}, y{};
@@ -26,12 +27,14 @@ using Tilemap = std::array<std::array<TileId, WORLD_WIDTH>, WORLD_HEIGHT>;
 
 struct World{
     Tilemap map;
-
+    
+    Inventory inv;
     Entity player;
 };
 
 World inline make_new_world(){
     World world;
+    world.inv = make_new_inventory();
     
     static constexpr size_t HALF_WORLD_HEIGHT = WORLD_HEIGHT / 2;
     for(size_t i{}; i < HALF_WORLD_HEIGHT; i++){

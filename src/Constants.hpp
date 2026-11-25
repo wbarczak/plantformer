@@ -24,3 +24,7 @@ static constexpr float JUMP_ACCELERATION = 11;
 static constexpr float SKIN_WIDTH = 1e-4f;
 
 static constexpr float Y_THRESHHOLD_TO_GO_DOWN_A_PLATFORM = .8;
+
+static constexpr int32_t INVENTORY_ITEM_COUNT_ON_X_AXIS = 10;
+static constexpr int32_t INVENTORY_ITEM_COUNT_ON_Y_AXIS = 5;
+static constexpr int32_t MAX_STACK_SIZE = 1000;

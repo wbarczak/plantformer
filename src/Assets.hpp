@@ -7,6 +7,7 @@
 
 #include "Constants.hpp"
 #include "Tiles.hpp"
+#include "Items.hpp"
 
 struct Sprite{
     Texture tex{};
@@ -39,6 +40,7 @@ struct Assets{
     Sprite player{};
     
     std::unordered_map<TileId, TileSprite> tile_sprites;
+    std::unordered_map<ItemId, Sprite> item_sprites;
 };
 
 Assets inline make_assets(){
@@ -77,6 +79,24 @@ Assets inline make_assets(){
     };
 
     assets.background = LoadTexture(ASSETS "background.png");
+
+    assets.item_sprites[ItemId::Air] = {};
+    assets.item_sprites[ItemId::TileDirt] = Sprite{
+        .tex = assets.spritesheet,
+        .rect = make_spritesheet_source_rectangle(1, 2)
+    };
+    assets.item_sprites[ItemId::TilePlatform] = Sprite{
+        .tex = assets.spritesheet,
+        .rect = make_spritesheet_source_rectangle(1, 1)
+    };
+    assets.item_sprites[ItemId::TileSpike] = Sprite{
+        .tex = assets.spritesheet,
+        .rect = make_spritesheet_source_rectangle(0, 0)
+    };
+    assets.item_sprites[ItemId::TileCheckpoint] = Sprite{
+        .tex = assets.spritesheet,
+        .rect = make_spritesheet_source_rectangle(2, 1)
+    };
     
     return assets;
 }

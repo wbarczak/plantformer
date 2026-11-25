@@ -7,6 +7,7 @@
 #include "Tiles.hpp"
 
 enum class ItemType : uint8_t{
+    Dummy,
     Tile,
 };
 
@@ -15,7 +16,8 @@ struct Item{
     TileId tile;
 };
 
-enum class ItemId : uint16_t{
+enum class ItemId : int16_t{
+    Air = -1,
     TileDirt,
     TilePlatform,
     TileSpike,
@@ -29,6 +31,7 @@ using Items = std::unordered_map<ItemId, Item>;
 Items inline make_items(){
     Items items;
 
+    items[ItemId::Air] = {};
     items[ItemId::TileDirt] = Item{
         .type = ItemType::Tile,
         .tile = TileId::Dirt,
