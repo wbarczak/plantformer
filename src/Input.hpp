@@ -1,7 +1,10 @@
 #pragma once
 
-#include "Constants.hpp"
+#include <cmath>
+
 #include <raylib.h>
+
+#include "Constants.hpp"
 
 struct Input{
     Vector2 mouse{};
@@ -21,7 +24,9 @@ inline void read_button_input(Input& input, Rectangle window_destination){
     mouse.y -= window_destination.y;
     mouse.x /= window_destination.width / WINDOW_WIDTH;
     mouse.y /= window_destination.height / WINDOW_HEIGHT;
-    input.mouse = mouse;
+    input.mouse.x = floorf(mouse.x);
+    input.mouse.y = floorf(mouse.y);
+
 
     input.right_click = input.right_click || IsMouseButtonPressed(MOUSE_BUTTON_RIGHT);
     input.left_click = input.left_click || IsMouseButtonPressed(MOUSE_BUTTON_LEFT);

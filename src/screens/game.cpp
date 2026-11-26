@@ -65,12 +65,14 @@ void game_update(){
         slot_rect.x = which_x * (PIXELS_PER_TILE + OFFSET_BETWEEN_SLOTS);
         slot_rect.y = which_y * (PIXELS_PER_TILE + OFFSET_BETWEEN_SLOTS);
 
-        if(CheckCollisionPointRec(input.mouse, slot_rect) && input.left_click){
-            if(!game.inv_on){
-                game.selected = which_x;
-            }
-            else{
-                std::swap(game.mouse, world.inv.items[which_y][which_x]);
+        if(CheckCollisionPointRec(input.mouse, slot_rect)){
+            if(input.left_click){
+                if(!game.inv_on){
+                    game.selected = which_x;
+                }
+                else{
+                    std::swap(game.mouse, world.inv.items[which_y][which_x]);
+                }
             }
             clicked_inv = true;
         }
@@ -256,7 +258,7 @@ void game_draw(){
     Rectangle slot_dest{.width = PIXELS_PER_TILE, .height = PIXELS_PER_TILE};
     for(auto& row : world.inv.items){
         for(auto& item : row){
-            DrawRectangleRec(slot_dest, BLACK);
+            DrawRectangleRec(slot_dest, {0, 0, 0, 100});
             Sprite item_sprite = global.assets.item_sprites.at(item.item_id);
             DrawTexturePro(item_sprite.tex, item_sprite.rect, slot_dest, {}, {}, WHITE);
             if(&item == &world.inv.items[0][game.selected]){
@@ -272,5 +274,9 @@ void game_draw(){
     }
 
     Sprite mouse_sprite = global.assets.item_sprites.at(game.mouse.item_id);
-    DrawTexturePro(mouse_sprite.tex, mouse_sprite.rect, {global.input.mouse.x, global.input.mouse.y, PIXELS_PER_TILE, PIXELS_PER_TILE}, {}, {}, WHITE);
+    Rectangle mouse_rect{global.input.mouse.x, global.input.mouse.y, PIXELS_PER_TILE, PIXELS_PER_TILE};
+    DrawTexturePro(mouse_sprite.tex, mouse_sprite.rect, mouse_rect, {}, {}, WHITE);
+    if(game.mouse.item_id != ItemId::Air){
+        DrawRectangleLinesEx(mouse_rect, 1, WHITE);
+    }
 }
