@@ -152,7 +152,7 @@ void game_update(){
 void game_draw(){
     const auto& world = game.world;
 
-    DrawTexture(global.assets.background, 0, 0, WHITE);
+    DrawRectangleGradientEx({0,0,WINDOW_WIDTH,WINDOW_HEIGHT}, SKYBLUE, BLUE, BLUE, SKYBLUE);
     
     game.cam.target = world.player.pos * PIXELS_PER_TILE;
     game.cam.target.y -= PIXELS_PER_TILE * .5f;
@@ -238,7 +238,7 @@ void game_draw(){
     DrawTexturePro(
         global.assets.player.tex,
         player_rect,
-        {(world.player.pos.x - .5f) * PIXELS_PER_TILE, (world.player.pos.y - 1) * PIXELS_PER_TILE, 16, 16},
+        {(world.player.pos.x - .5f) * PIXELS_PER_TILE, (world.player.pos.y - 1) * PIXELS_PER_TILE, PIXELS_PER_TILE, PIXELS_PER_TILE},
         {},
         {},
         WHITE

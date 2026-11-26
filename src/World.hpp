@@ -36,7 +36,7 @@ World inline make_new_world(){
     World world;
     world.inv = make_new_inventory();
     
-    static constexpr size_t HALF_WORLD_HEIGHT = WORLD_HEIGHT / 2;
+    static constexpr size_t HALF_WORLD_HEIGHT = WORLD_HEIGHT - WORLD_HEIGHT / 4;
     for(size_t i{}; i < HALF_WORLD_HEIGHT; i++){
         world.map[i].fill(TileId::None);
     }

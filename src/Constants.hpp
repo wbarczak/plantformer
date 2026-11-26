@@ -3,18 +3,19 @@
 #include <cstdint>
 #include <cstdlib>
 
-static constexpr int32_t WINDOW_WIDTH = 320;
-static constexpr int32_t WINDOW_HEIGHT = 180;
+static constexpr int32_t WINDOW_WIDTH = 640;
+static constexpr int32_t WINDOW_HEIGHT = 360;
 inline const char* WINDOW_NAME = "Plantformer";
-static constexpr float DEFAULT_WINDOW_SCALE = 4;
+static constexpr float DEFAULT_WINDOW_SCALE = 2;
 
-static constexpr float PIXELS_PER_TILE = 16;
+static constexpr float PIXELS_PER_TILE = 32;
+static constexpr float PIXELS_PER_MINI_ICON = PIXELS_PER_TILE / 2;
 
 static constexpr int32_t TICKRATE = 60;
 static constexpr float DT = 1.f / TICKRATE;
 
 static constexpr int32_t WORLD_WIDTH = 100;
-static constexpr int32_t WORLD_HEIGHT = 100;
+static constexpr int32_t WORLD_HEIGHT = 60;
 
 static constexpr float PLAYER_SPEED = 6;
 static constexpr float PLAYER_ACCELERATION = 30;

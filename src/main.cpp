@@ -5,6 +5,7 @@
 #include <raylib.h>
 #include <raymath.h>
 
+#include "Assets.hpp"
 #include "Global.hpp"
 #include "Constants.hpp"
 
@@ -51,6 +52,11 @@ int main(){
     while (!WindowShouldClose()){
         global.render_texture_destination_rectangle = calculate_window_destination();
         read_button_input(global.input, global.render_texture_destination_rectangle);
+
+        // Temporary hot reloading of assets, it does not deallocate the old assets
+        if(IsKeyPressed(KEY_R)){
+            global.assets = make_assets();
+        }
 
         timer += GetFrameTime();
         timer = std::min(timer, .2f);
