@@ -28,3 +28,7 @@ Inventory inline make_new_inventory(){
 
     return inv;
 }
+
+bool inline inventory_pickup(Inventory& inv, ItemId item){
+    return false;
+}
