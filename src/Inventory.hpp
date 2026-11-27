@@ -22,10 +22,10 @@ Inventory inline make_new_inventory(){
         row.fill({});
     };
 
-    inv.items[0][0] = {ItemId::TileDirt, 200};
-    inv.items[0][1] = {ItemId::TilePlatform, 200};
-    inv.items[0][2] = {ItemId::TileSpike, 200};
-    inv.items[0][3] = {ItemId::TileCheckpoint, 200};
+    inv.items[1][0] = {ItemId::TileDirt, 10};
+    inv.items[1][1] = {ItemId::TilePlatform, 10};
+    inv.items[1][2] = {ItemId::TileSpike, 10};
+    inv.items[1][3] = {ItemId::TileCheckpoint, 10};
 
     return inv;
 }
@@ -43,7 +43,7 @@ bool inline inventory_pickup(Inventory& inv, ItemId item){
                 empty_x = x;
                 empty_y = y;
             }
-            if(slot.count < MAX_STACK_SIZE){
+            if(slot.item_id == item && slot.count < MAX_STACK_SIZE){
                 slot.count += 1;
                 return true;
             }

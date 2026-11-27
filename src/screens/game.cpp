@@ -302,7 +302,9 @@ void game_draw(){
             if(&item == &world.inv.items[0][game.selected]){
                 DrawRectangleLinesEx(slot_dest, 1, WHITE);
             }
-            DrawText(std::to_string(item.count).c_str(), slot_dest.x, slot_dest.y, 8, BLACK);
+            if(item.item_id != ItemId::Air){
+                DrawText(std::to_string(item.count).c_str(), slot_dest.x, slot_dest.y, 8, BLACK);
+            }
             slot_dest.x += PIXELS_PER_TILE + OFFSET_BETWEEN_SLOTS;
         }
         if (!game.inv_on){
@@ -316,6 +318,6 @@ void game_draw(){
     Rectangle mouse_rect{global.input.mouse.x, global.input.mouse.y, PIXELS_PER_TILE, PIXELS_PER_TILE};
     DrawTexturePro(mouse_sprite.tex, mouse_sprite.rect, mouse_rect, {}, {}, WHITE);
     if(game.mouse.item_id != ItemId::Air){
-        DrawRectangleLinesEx(mouse_rect, 1, WHITE);
+        DrawText(std::to_string(game.mouse.count).c_str(), mouse_rect.x, mouse_rect.y, 8, BLACK);
     }
 }
