@@ -45,7 +45,7 @@ int main(){
 
     init_global();
     ScreenId active_screen_id = global.active_screen_id;
-    const Screen* active_screen = &global.screens.at(active_screen_id);
+    const Screen* active_screen = &global.screens[active_screen_id];
     active_screen->on_enter();
 
     RenderTexture2D target = LoadRenderTexture(WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -92,7 +92,7 @@ int main(){
 
         if(active_screen_id != global.active_screen_id){
             active_screen->on_exit();
-            active_screen = &global.screens.at(global.active_screen_id);
+            active_screen = &global.screens[global.active_screen_id];
             active_screen->on_enter();
         }
     }

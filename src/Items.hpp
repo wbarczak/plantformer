@@ -2,8 +2,8 @@
 
 #include <cstdlib>
 #include <cstdint>
-#include <unordered_map>
 
+#include "EnumArray.hpp"
 #include "Tiles.hpp"
 
 enum class ItemType : uint8_t{
@@ -16,8 +16,8 @@ struct Item{
     TileId tile;
 };
 
-enum class ItemId : int16_t{
-    Air = -1,
+enum class ItemId : uint16_t{
+    Air,
     TileDirt,
     TilePlatform,
     TileSpike,
@@ -26,7 +26,7 @@ enum class ItemId : int16_t{
 
 static constexpr size_t ITEM_COUNT = static_cast<size_t>(ItemId::TileCheckpoint) + 1;
 
-using Items = std::unordered_map<ItemId, Item>;
+using Items = EnumArray<ItemId, Item, ITEM_COUNT>;
 
 Items inline make_items(){
     Items items;

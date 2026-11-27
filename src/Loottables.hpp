@@ -1,16 +1,15 @@
 #pragma once
 
-#include <unordered_map>
-
+#include "EnumArray.hpp"
 #include "Tiles.hpp"
 #include "Items.hpp"
 
-using Lotttables = std::unordered_map<TileId, ItemId>;
+using Lotttables = EnumArray<TileId, ItemId, TILE_COUNT>;
 
 Lotttables inline make_loottables(){
     Lotttables ltb;
 
-    ltb[TileId::None] = ItemId::Air;
+    ltb[TileId::Air] = ItemId::Air;
     ltb[TileId::Dirt] = ItemId::TileDirt;
     ltb[TileId::Platform] = ItemId::TilePlatform;
     ltb[TileId::Spike] = ItemId::TileSpike;

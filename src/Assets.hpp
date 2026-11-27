@@ -1,6 +1,5 @@
 #pragma once
 
-#include <unordered_map>
 #include <cstdint>
 
 #include <raylib.h>
@@ -8,6 +7,7 @@
 #include "Constants.hpp"
 #include "Tiles.hpp"
 #include "Items.hpp"
+#include "EnumArray.hpp"
 
 struct Sprite{
     Texture tex{};
@@ -43,9 +43,9 @@ struct Assets{
 
     Sprite player{};
     
-    std::unordered_map<TileId, TileSprite> tile_sprites;
-    std::unordered_map<ItemId, Sprite> item_sprites;
-    std::unordered_map<ItemId, Sprite> mini_icon_sprites;
+    EnumArray<TileId, TileSprite, TILE_COUNT> tile_sprites;
+    EnumArray<ItemId, Sprite, ITEM_COUNT> item_sprites;
+    EnumArray<ItemId, Sprite, ITEM_COUNT> mini_icon_sprites;
 };
 
 Assets inline make_assets(){
@@ -58,7 +58,7 @@ Assets inline make_assets(){
         .rect = make_spritesheet_source_rectangle(3, 3),
     };
 
-    assets.tile_sprites[TileId::None] = {};
+    assets.tile_sprites[TileId::Air] = {};
     assets.tile_sprites[TileId::Dirt] = TileSprite{
         .type = TileSpriteType::SpecialTop,
         .tex = assets.spritesheet,

@@ -82,9 +82,9 @@ void game_update(){
     Vector2 cursor_tile_pos = (input.mouse - game.cam.offset + game.cam.target) / PIXELS_PER_TILE;
     if(input.break_held && !clicked_inv){
         TileId& tile = world.map[cursor_tile_pos.y][cursor_tile_pos.x];
-        if(tile != TileId::None){
+        if(tile != TileId::Air){
             ItemId dropped = global.loottables[tile];
-            tile = TileId::None;
+            tile = TileId::Air;
             Vector2 cursor_tile_middle = cursor_tile_pos;
             cursor_tile_middle.x = floorf(cursor_tile_middle.x) + .5f;
             cursor_tile_middle.y = floorf(cursor_tile_middle.y) + .5f;
@@ -95,8 +95,8 @@ void game_update(){
         TileId& tile = world.map[cursor_tile_pos.y][cursor_tile_pos.x];
         ItemStack& selected_item = world.inv.items[TOOLBAR_INVENTORY_ROW][game.selected];
 
-        if(tile == TileId::None){
-            auto& item = global.items.at(selected_item.item_id);
+        if(tile == TileId::Air){
+            auto& item = global.items[selected_item.item_id];
             if(item.type == ItemType::Tile){
                 tile = item.tile;
                 inventory_decrease_stack(selected_item);
@@ -108,8 +108,8 @@ void game_update(){
     bool platforms_under_player{};
     if (could_be_platforms_under_player){
         const float y_position = world.player.pos.y + world.player.hurtbox.y + world.player.hurtbox.height + SKIN_WIDTH;
-        auto& tile1 = global.tiles.at(world.map[y_position][world.player.pos.x + world.player.hurtbox.x]);
-        auto& tile2 = global.tiles.at(world.map[y_position][world.player.pos.x + world.player.hurtbox.x + world.player.hurtbox.width]);
+        auto& tile1 = global.tiles[world.map[y_position][world.player.pos.x + world.player.hurtbox.x]];
+        auto& tile2 = global.tiles[world.map[y_position][world.player.pos.x + world.player.hurtbox.x + world.player.hurtbox.width]];
         
         platforms_under_player = (tile1.colision == TileColision::Air || tile1.colision == TileColision::Platform)
             && (tile2.colision == TileColision::Air || tile2.colision == TileColision::Platform);
@@ -191,7 +191,7 @@ void game_draw(){
     for(int32_t y{}; y < WORLD_HEIGHT; y++){
         for(int32_t x{}; x < WORLD_WIDTH; x++){
             TileId tile_id = world.map[y][x];
-            TileSprite& sprite = global.assets.tile_sprites.at(tile_id);
+            TileSprite& sprite = global.assets.tile_sprites[tile_id];
 
             auto draw = [&](Rectangle src){
                 DrawTexturePro(
@@ -223,7 +223,7 @@ void game_draw(){
                             return true;
                         }
 
-                        auto& tile_colision = global.tiles.at(world.map[test_y][test_x]).colision;
+                        auto& tile_colision = global.tiles[world.map[test_y][test_x]].colision;
                         return tile_colision == TileColision::Solid || (tile_colision == TileColision::Platform && test_y == y + 1);
                     };
 
@@ -271,7 +271,7 @@ void game_draw(){
     );
 
     for(auto& dropped : world.items){
-        Sprite sprite = global.assets.mini_icon_sprites.at(dropped.item_id);
+        Sprite sprite = global.assets.mini_icon_sprites[dropped.item_id];
         Rectangle dropped_rect{
             .x = dropped.position.x * PIXELS_PER_TILE,
             .y = dropped.position.y * PIXELS_PER_TILE,
@@ -297,7 +297,7 @@ void game_draw(){
     for(auto& row : world.inv.items){
         for(auto& item : row){
             DrawRectangleRec(slot_dest, {0, 0, 0, 100});
-            Sprite item_sprite = global.assets.item_sprites.at(item.item_id);
+            Sprite item_sprite = global.assets.item_sprites[item.item_id];
             DrawTexturePro(item_sprite.tex, item_sprite.rect, slot_dest, {}, {}, WHITE);
             if(&item == &world.inv.items[0][game.selected]){
                 DrawRectangleLinesEx(slot_dest, 1, WHITE);
@@ -314,7 +314,7 @@ void game_draw(){
         slot_dest.y += PIXELS_PER_TILE + OFFSET_BETWEEN_SLOTS;
     }
 
-    Sprite mouse_sprite = global.assets.item_sprites.at(game.mouse.item_id);
+    Sprite mouse_sprite = global.assets.item_sprites[game.mouse.item_id];
     Rectangle mouse_rect{global.input.mouse.x, global.input.mouse.y, PIXELS_PER_TILE, PIXELS_PER_TILE};
     DrawTexturePro(mouse_sprite.tex, mouse_sprite.rect, mouse_rect, {}, {}, WHITE);
     if(game.mouse.item_id != ItemId::Air){

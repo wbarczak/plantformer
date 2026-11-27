@@ -1,8 +1,8 @@
 #pragma once
 
 #include <cstdlib>
-#include <unordered_map>
 
+#include "EnumArray.hpp"
 #include "screens/game.hpp"
 
 struct Screen{
@@ -18,7 +18,7 @@ enum class ScreenId{
 
 static constexpr size_t SCREEN_COUNT = static_cast<size_t>(ScreenId::Game) + 1;
 
-using Screens = std::unordered_map<ScreenId, Screen>;
+using Screens = EnumArray<ScreenId, Screen, SCREEN_COUNT>;
 
 Screens inline make_screens(){
     Screens screens;

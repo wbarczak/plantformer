@@ -35,7 +35,7 @@ void inline colisions_x(const Tilemap& map, Entity& entity){
 
     for (int32_t y = start_y; y <= end_y; y++){
         TileId tile_id = map[y][start_x];
-        auto& tile = tiles.at(tile_id);
+        auto& tile = tiles[tile_id];
 
         switch(tile.colision){
             case TileColision::Solid:{
@@ -58,7 +58,7 @@ void inline colisions_x(const Tilemap& map, Entity& entity){
 
     for (int32_t y = start_y; y <= end_y; y++){
         TileId tile_id = map[y][end_x];
-        auto& tile = tiles.at(tile_id);
+        auto& tile = tiles[tile_id];
 
         switch(tile.colision){
             case TileColision::Solid:{
@@ -109,7 +109,7 @@ void inline colisions_y(const Tilemap& map, Entity& entity){
 
     for (int32_t x = start_x; x <= end_x; x++){
         TileId tile_id = map[start_y][x];
-        auto& tile = tiles.at(tile_id);
+        auto& tile = tiles[tile_id];
 
         switch(tile.colision){
             case TileColision::Solid:{
@@ -132,7 +132,7 @@ void inline colisions_y(const Tilemap& map, Entity& entity){
 
     for (int32_t x = start_x; x <= end_x; x++){
         TileId tile_id = map[end_y][x];
-        auto& tile = tiles.at(tile_id);
+        auto& tile = tiles[tile_id];
 
         auto ground_colision = [&]{
             hurtbox.y = end_y - hurtbox.height - SKIN_WIDTH;

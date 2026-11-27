@@ -2,7 +2,8 @@
 
 #include <cstdint>
 #include <cstdlib>
-#include <unordered_map>
+
+#include "EnumArray.hpp"
 
 enum class TileColision : uint8_t{
     Air,
@@ -21,8 +22,8 @@ struct Tile{
     TileBehaviour behaviour{};
 };
 
-enum TileId : int16_t{
-    None = -1,
+enum TileId : uint16_t{
+    Air,
     Dirt,
     Platform,
     Spike,
@@ -31,12 +32,12 @@ enum TileId : int16_t{
 
 static constexpr size_t TILE_COUNT = static_cast<size_t>(TileId::Checkpoint) + 1;
 
-using Tiles = std::unordered_map<TileId, Tile>;
+using Tiles = EnumArray<TileId, Tile, TILE_COUNT>;
 
 Tiles inline make_tiles(){
     Tiles tiles;
 
-    tiles[TileId::None] = {};
+    tiles[TileId::Air] = {};
     tiles[TileId::Dirt].colision = TileColision::Solid;
     tiles[TileId::Platform].colision = TileColision::Platform;
     tiles[TileId::Spike].colision = TileColision::Hazard;

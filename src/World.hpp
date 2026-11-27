@@ -45,7 +45,7 @@ World inline make_new_world(){
     
     static constexpr size_t HALF_WORLD_HEIGHT = WORLD_HEIGHT - WORLD_HEIGHT / 4;
     for(size_t i{}; i < HALF_WORLD_HEIGHT; i++){
-        world.map[i].fill(TileId::None);
+        world.map[i].fill(TileId::Air);
     }
     for(size_t i = HALF_WORLD_HEIGHT; i < WORLD_HEIGHT; i++){
         world.map[i].fill(TileId::Dirt);
