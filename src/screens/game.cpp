@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <algorithm>
+#include <string>
 
 #include <raylib.h>
 #include <raymath.h>
@@ -80,15 +81,25 @@ void game_update(){
 
     Vector2 cursor_tile_pos = (input.mouse - game.cam.offset + game.cam.target) / PIXELS_PER_TILE;
     if(input.break_held && !clicked_inv){
-        world.map[cursor_tile_pos.y][cursor_tile_pos.x] = TileId::None;
+        TileId& tile = world.map[cursor_tile_pos.y][cursor_tile_pos.x];
+        if(tile != TileId::None){
+            ItemId dropped = global.loottables[tile];
+            tile = TileId::None;
+            Vector2 cursor_tile_middle = cursor_tile_pos;
+            cursor_tile_middle.x = floorf(cursor_tile_middle.x) + .5f;
+            cursor_tile_middle.y = floorf(cursor_tile_middle.y) + .5f;
+            world.items.push_back(DroppedItem{.item_id = dropped, .position = cursor_tile_middle});
+        }
     }
     else if(input.place_held && !clicked_inv){
         TileId& tile = world.map[cursor_tile_pos.y][cursor_tile_pos.x];
+        ItemStack& selected_item = world.inv.items[TOOLBAR_INVENTORY_ROW][game.selected];
 
         if(tile == TileId::None){
-            auto& item = global.items.at(world.inv.items[TOOLBAR_INVENTORY_ROW][game.selected].item_id);
+            auto& item = global.items.at(selected_item.item_id);
             if(item.type == ItemType::Tile){
                 tile = item.tile;
+                inventory_decrease_stack(selected_item);
             }
         }
     }
@@ -146,6 +157,21 @@ void game_update(){
     player_position.y = world.player.pos.y - SKIN_WIDTH;
     if (world.map[player_position.y][player_position.x] == TileId::Checkpoint){
         world.player.spawnpoint = player_position;
+    }
+
+    Rectangle player_hurtbox = world.player.hurtbox;
+    player_hurtbox.x += world.player.pos.x;
+    player_hurtbox.y += world.player.pos.y;
+    for(auto item = world.items.begin(); item != world.items.end();){
+        if(CheckCollisionPointRec(item->position, player_hurtbox)){
+            bool collected = inventory_pickup(world.inv, item->item_id);
+
+            if(collected){
+                item = world.items.erase(item);
+                continue;
+            }
+        }
+        item += 1;
     }
 }
 
@@ -244,6 +270,18 @@ void game_draw(){
         WHITE
     );
 
+    for(auto& dropped : world.items){
+        Sprite sprite = global.assets.mini_icon_sprites.at(dropped.item_id);
+        Rectangle dropped_rect{
+            .x = dropped.position.x * PIXELS_PER_TILE,
+            .y = dropped.position.y * PIXELS_PER_TILE,
+            .width = PIXELS_PER_MINI_ICON,
+            .height = PIXELS_PER_MINI_ICON,
+        };
+        dropped_rect.y += sin(global.elapsed * 4) * 2;
+        DrawTexturePro(sprite.tex, sprite.rect, dropped_rect, Vector2{PIXELS_PER_MINI_ICON, PIXELS_PER_MINI_ICON} / 2.f, {}, WHITE);
+    }
+
     // Rectangle player_hurtbox = game.player.hurtbox;
     // player_hurtbox.x += game.player.pos.x;
     // player_hurtbox.y += game.player.pos.y;
@@ -264,6 +302,7 @@ void game_draw(){
             if(&item == &world.inv.items[0][game.selected]){
                 DrawRectangleLinesEx(slot_dest, 1, WHITE);
             }
+            DrawText(std::to_string(item.count).c_str(), slot_dest.x, slot_dest.y, 8, BLACK);
             slot_dest.x += PIXELS_PER_TILE + OFFSET_BETWEEN_SLOTS;
         }
         if (!game.inv_on){

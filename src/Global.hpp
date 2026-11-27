@@ -5,15 +5,19 @@
 #include "Tiles.hpp"
 #include "Input.hpp"
 #include "Items.hpp"
+#include "Loottables.hpp"
 
 inline struct Global{
     Assets assets;
     
     Screens screens;
     ScreenId active_screen_id = ScreenId::Game;
+    float elapsed{};
 
     Tiles tiles;
     Items items;
+
+    Lotttables loottables;
 
     Input input;
 
@@ -25,4 +29,5 @@ void inline init_global(){
     global.screens = make_screens();
     global.tiles = make_tiles();
     global.items = make_items();
+    global.loottables = make_loottables();
 }

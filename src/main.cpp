@@ -1,6 +1,8 @@
 #include <algorithm>
 #include <cstdlib>
 #include <cmath>
+#include <exception>
+#include <iostream>
 
 #include <raylib.h>
 #include <raymath.h>
@@ -57,6 +59,8 @@ int main(){
         if(IsKeyPressed(KEY_R)){
             global.assets = make_assets();
         }
+
+        global.elapsed += GetFrameTime();
 
         timer += GetFrameTime();
         timer = std::min(timer, .2f);

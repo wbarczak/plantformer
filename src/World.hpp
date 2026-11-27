@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <vector>
 
 #include <raylib.h>
 
@@ -22,11 +23,17 @@ struct Entity{
     bool respawning = false;
 };
 
+struct DroppedItem{
+    ItemId item_id = ItemId::Air;
+    Vector2 position{};
+};
+
 // To access a tile at (x, y) do tiles[y][x] cuz that's more intuitive for me
 using Tilemap = std::array<std::array<TileId, WORLD_WIDTH>, WORLD_HEIGHT>;
 
 struct World{
     Tilemap map;
+    std::vector<DroppedItem> items;
     
     Inventory inv;
     Entity player;

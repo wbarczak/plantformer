@@ -24,3 +24,5 @@ add_compile_definitions(plantformer PRIVATE ASSETS="${PROJECT_SOURCE_DIR}/assets
 #add_compile_definitions(plantformer PRIVATE ASSETS="/assets/")
 add_compile_definitions(plantformer PRIVATE LEVELS="${PROJECT_SOURCE_DIR}/levels/")
 #add_compile_definitions(plantformer PRIVATE LEVELS="/levels/")
+
+#set(CMAKE_BUILD_TYPE "debug")

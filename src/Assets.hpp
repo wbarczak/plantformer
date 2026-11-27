@@ -104,7 +104,8 @@ Assets inline make_assets(){
         .rect = make_spritesheet_source_rectangle(2, 1)
     };
 
-    assets.mini_icon_spritesheet = LoadTexture("mini_icons.png");
+    assets.mini_icon_spritesheet = LoadTexture(ASSETS "mini_icons.png");
+    assets.mini_icon_sprites[ItemId::Air] = {};
     assets.mini_icon_sprites[ItemId::TileDirt] = Sprite{
         .tex = assets.mini_icon_spritesheet,
         .rect = make_mini_spritesheet_source_rectangle(2, 0)
